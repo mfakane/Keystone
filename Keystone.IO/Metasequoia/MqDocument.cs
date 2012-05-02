@@ -134,7 +134,9 @@ namespace Linearstar.Keystone.IO.Metasequoia
 			if (!string.IsNullOrEmpty(this.IncludeXml))
 				sb.AppendLine("IncludeXml \"" + this.IncludeXml + "\"");
 
-			sb.AppendLine(this.Scene.GetFormattedText());
+			if (this.Scene != null)
+				sb.AppendLine(this.Scene.GetFormattedText());
+
 			sb.AppendLine("Material " + this.Materials.Count + " {");
 
 			foreach (var i in this.Materials)
