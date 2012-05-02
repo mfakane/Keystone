@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{329F82A4-464C-4E1B-8643-20268DC917F0}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Linearstar.Keystone.IO</RootNamespace>
+    <AssemblyName>Keystone.IO</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Elfreina\ElAnimationData.cs" />
+    <Compile Include="Elfreina\ElBoneAnimationPart.cs" />
+    <Compile Include="Elfreina\ElBlendPart.cs" />
+    <Compile Include="Elfreina\ElData.cs" />
+    <Compile Include="Elfreina\ElDocument.cs" />
+    <Compile Include="Elfreina\ElInterpolationType.cs" />
+    <Compile Include="Elfreina\ElMaterial.cs" />
+    <Compile Include="Elfreina\ElMesh.cs" />
+    <Compile Include="Elfreina\ElMeshContainer.cs" />
+    <Compile Include="Elfreina\ElNode.cs" />
+    <Compile Include="Elfreina\ElSetting.cs" />
+    <Compile Include="Elfreina\ElTokenizer.cs" />
+    <Compile Include="Elfreina\ElUVAnimationPart.cs" />
+    <Compile Include="Elfreina\ElVertexFormat.cs" />
+    <Compile Include="Metasequoia\MqChunk.cs" />
+    <Compile Include="Metasequoia\MqChunkAttribute.cs" />
+    <Compile Include="Metasequoia\MqDirectionalLight.cs" />
+    <Compile Include="Metasequoia\MqDocument.cs" />
+    <Compile Include="Metasequoia\MqFace.cs" />
+    <Compile Include="Metasequoia\MqLatheAxis.cs" />
+    <Compile Include="Metasequoia\MqLatheType.cs" />
+    <Compile Include="Metasequoia\MqMaterial.cs" />
+    <Compile Include="Metasequoia\MqMirrorAxis.cs" />
+    <Compile Include="Metasequoia\MqMirrorType.cs" />
+    <Compile Include="Metasequoia\MqObject.cs" />
+    <Compile Include="Metasequoia\MqPatchType.cs" />
+    <Compile Include="Metasequoia\MqProjectionType.cs" />
+    <Compile Include="Metasequoia\MqScene.cs" />
+    <Compile Include="Metasequoia\MqShader.cs" />
+    <Compile Include="Metasequoia\MqShading.cs" />
+    <Compile Include="Metasequoia\MqTokenizer.cs" />
+    <Compile Include="Metasequoia\MqVertexColor.cs" />
+    <Compile Include="MikuMikuMoving\MvdInterpolationPoint.cs" />
+    <Compile Include="MikuMikuMoving\MvdAccessoryPropertyData.cs" />
+    <Compile Include="MikuMikuMoving\MvdAccessoryPropertyFrame.cs" />
+    <Compile Include="MikuMikuMoving\MvdCameraData.cs" />
+    <Compile Include="MikuMikuMoving\MvdCameraFrame.cs" />
+    <Compile Include="MikuMikuMoving\MvdEffectParameter.cs" />
+    <Compile Include="MikuMikuMoving\MvdEffectParameterData.cs" />
+    <Compile Include="MikuMikuMoving\MvdEffectParameterType.cs" />
+    <Compile Include="MikuMikuMoving\MvdEffectPropertyData.cs" />
+    <Compile Include="MikuMikuMoving\MvdEffectPropertyFrame.cs" />
+    <Compile Include="MikuMikuMoving\MvdLightData.cs" />
+    <Compile Include="MikuMikuMoving\MvdLightFrame.cs" />
+    <Compile Include="MikuMikuMoving\MvdModelPropertyData.cs" />
+    <Compile Include="MikuMikuMoving\MvdModelPropertyFrame.cs" />
+    <Compile Include="MikuMikuMoving\MvdMorphData.cs" />
+    <Compile Include="MikuMikuMoving\MvdBoneData.cs" />
+    <Compile Include="MikuMikuMoving\MvdBoneFrame.cs" />
+    <Compile Include="MikuMikuMoving\MvdFixedItemSection.cs" />
+    <Compile Include="MikuMikuMoving\MvdMorphFrame.cs" />
+    <Compile Include="MikuMikuMoving\MvdNameList.cs" />
+    <Compile Include="MikuMikuMoving\MvdProjectData.cs" />
+    <Compile Include="MikuMikuMoving\MvdProjectFrame.cs" />
+    <Compile Include="MikuMikuMoving\MvdSection.cs" />
+    <Compile Include="MikuMikuMoving\MvdDocument.cs" />
+    <Compile Include="MikuMikuMoving\MvdSelfShadowModel.cs" />
+    <Compile Include="MikuMikuMoving\MvdTag.cs" />
+    <Compile Include="MikuMikuMoving\MvdUtil.cs" />
+    <Compile Include="Text\ParseException.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Text\Token.cs" />
+    <Compile Include="Text\Tokenizer.cs" />
+    <Compile Include="Util.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="MikuMikuMoving\MvdFormat.txt" />
+    <Content Include="readme.txt" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

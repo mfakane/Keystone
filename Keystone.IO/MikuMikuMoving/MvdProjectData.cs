@@ -1,0 +1,38 @@
+﻿using System.Collections.Generic;
+using System.IO;
+
+namespace Linearstar.Keystone.IO.MikuMikuMoving
+{
+	public class MvdProjectData : MvdFixedItemSection
+	{
+		public List<MvdProjectFrame> Frames
+		{
+			get;
+			private set;
+		}
+
+		public MvdProjectData()
+			: base(MvdTag.Project)
+		{
+			this.Frames = new List<MvdProjectFrame>();
+		}
+
+		protected override void ReadItem(MvdDocument document, BinaryReader br)
+		{
+			this.Frames.Add(MvdProjectFrame.Parse(this, br));
+		}
+
+		public override void Write(MvdDocument document, BinaryWriter bw)
+		{
+			this.MinorType = 1;
+			this.RawCount = this.Frames.Count;
+
+			base.Write(document, bw);
+		}
+
+		protected override void WriteItem(MvdDocument document, BinaryWriter bw, int index)
+		{
+			this.Frames[index].Write(this, bw);
+		}
+	}
+}

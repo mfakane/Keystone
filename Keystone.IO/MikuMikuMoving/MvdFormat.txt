@@ -1,0 +1,311 @@
+﻿// .mvd format definition
+// bool: _Bool (true: value != 0, false: value == 0)
+// char: uint8_t
+// int: int32_t
+// long: int64_t
+
+// char
+typedef enum
+{
+	NAMELIST_ID = 0,
+	BONE_ID = 16,
+	MORPH_ID = 32,
+	MODELPROPERTY_ID = 64,
+	ACCESSORYPROPERTY_ID = 80,
+	EFFECTPROPERTY_ID = 88,
+	CAMERA_ID = 96,
+	LIGHT_ID = 112,
+	PROJECT_ID = 128,
+	EOF_ID = 255,
+} Tag;
+
+// int
+typedef enum
+{
+	EP_NONE,
+	EP_BOOL,
+	EP_INT,
+	EP_STRING,
+	EP_FLOAT,
+	EP_FLOAT2,
+	EP_FLOAT3,
+	EP_FLOAT4
+} EffectParamValueType;
+
+struct Format
+{
+	char format[30];	// "Motion Vector Data file" ASCII
+	float version;		// 00 00 80 3F == 1.0f
+	char encoding;		// 0 => UTF-16 LE, 1 or default => UTF-8
+	int objectNameSize;
+	char objectName[objectNameSize];	// UTF-16 or UTF-8 string
+
+	int objectNameSize2;
+	char objectName2[objectNameSize2];	// UTF-16 or UTF-8 string
+	float keyFps;
+	int reservedSize;
+	char reserved[reservedSize];		// maybe zero
+	Section sections[];					// array
+}
+
+struct Section
+{
+	Tag type;
+	char minorType;
+	
+	// any of
+	{
+		NameList nameList;								// type == NAMELIST_ID
+		BoneData boneData;								// type == BONE_ID
+		MorphData morphData;							// type == MORPH_ID
+		ModelPropertyData modelPropertyData;			// type == MODELPROPERTY_ID
+		AccessoryPropertyData accessoryPropertyData;	// type == ACCESSORYPROPERTY_ID
+		EffectPropertyData effectPropertyData;			// type == EFFECTPROPERTY_ID
+		CameraData cameraData;							// type == CAMERA_ID
+		LightData lightData;							// type == LIGHT_ID
+		ProjectData projectData;						// type == PROJECT_ID
+	}
+}
+
+struct NameList
+{
+	int reserved;
+	int reserved2;
+	int count;
+	int reserved3Size;
+	char reserved3[reserved3Size];		// maybe zero
+	Name names[count];
+}
+
+struct Name
+{
+	int key;
+	int nameSize;
+	char name[nameSize];				// UTF-16 or UTF-8 string
+}
+
+struct InterpolationPoint
+{
+	char x;
+	char y;
+}
+
+struct BoneData
+{
+	int key;
+	int itemSize;
+	int count;
+	int stageCountSize;
+	char stageCount[stageCountSize];		// maybe zero, converted to be int
+	BoneFrame frames[count];
+}
+
+struct BoneFrame
+{
+	int stageId;
+	long frameTime;							// frameNumber = (long)((float)frameTime * (SystemController.FPS / Block.keyFps))
+	float position[3];
+	float quaternion[4];
+	InterpolationPoint interpolation[8];	// XA, XB, YA, YB, ZA, ZB, RA, RB
+	char reserved[BoneData.itemSize - 56];
+}
+
+struct MorphData
+{
+	int key;
+	int itemSize;
+	int count;
+	int reservedSize:
+	char reserved[reservedSize];		// maybe zero
+	MorphFrame frames[count];
+}
+
+struct MorphFrame
+{
+	long frameTime;
+	float weight;
+	InterpolationPoint interpolation[2];	// A, B
+	char reserved[MorphData.itemSize - 16];
+}
+
+struct ModelPropertyData
+{
+	int reserved;
+	// because of the MMM's I/O code bug, this variable has a 4 smaller number of the real size (20), when minorType == 1 .
+	int itemSize;
+	int count;
+	int ikSize;
+
+	// if (ikSize > 0) {
+	int ikCount;
+	int ikBones[ikCount];
+	char reserved2[ikSize - 4 * (ikCount + 1)];		// maybe zero
+	// }
+
+	ModelPropertyFrame frames[count];
+}
+
+struct ModelPropertyFrame
+{
+	long frameTime;
+	bool visible;
+	bool shadow;
+	bool addBlending;
+	bool physics;
+
+	// if (Section.minorType >= 1) {
+	bool physicsStillMode;
+	bool reserved[3];
+	// }
+
+	float edgeWidth;
+	char edgeColor[4];		// argb
+	bool ikEnabled[ModelPropertyData.ikCount];
+	char reserved[ModelPropertyData.itemSize - (20 + ModelPropertyData.ikCount)];
+}
+
+struct AccessoryPropertyData
+{
+	int reserved;
+	int itemSize;
+	int count;
+	int reserved2Size;
+	char reserved2[reserved2Size];		// maybe zero
+	AccessoryPropertyFrame frames[count];
+}
+
+struct AccessoryPropertyFrame
+{
+	long frameTime;
+	bool visible;
+	bool shadow;
+	bool addBlending;
+	char reserved;
+	float scaling;
+	float alpha;
+	int relatedModelId;
+	int relatedBoneId;
+	char reserved[AccessoryPropertyData.itemSize - 28];
+}
+
+struct EffectPropertyData
+{
+	int reserved;
+	int itemSize;
+	int count;
+	int parameterSize;
+
+	// if (parameterSize > 4) {
+	int parameterCount;
+	EffectParameter parameters[parameterCount];
+	char reserved2[parameterSize - 8 * parameterCount - 4];		// maybe zero
+	// }
+
+	EffectPropertyData frames[count];
+}
+
+struct EffectParameter
+{
+	int pid;							// name = NameList.names[pid]
+	EffectParamValueType valueType;
+}
+
+struct EffectPropertyFrame
+{
+	long frameTime;
+	bool visible;
+	bool addBlending;
+	bool shadow;
+	char reserved;
+	float scaling;
+	float alpha;
+	int relatedModelId;
+	int relatedBoneId;
+
+	// if (EffectPropertyData.itemSize > 28) {
+	EffectParameterData parameters[EffectPropertyData.parameterCount];
+	// }
+
+	char reserved[EffectPropertyData.itemSize - (28 + sizeof(parameters))]; 
+}
+
+struct EffectParameterData
+{
+	// type = EffectPropertyData.parameters[i].valueType
+	// any of
+	{
+		bool value;			// type == EP_BOOL
+		int value;			// type == EP_INT
+		float value;		// type == EP_FLOAT
+		float value[2];		// type == EP_FLOAT2
+		float value[3];		// type == EP_FLOAT3
+		float value[4];		// type == EP_FLOAT4
+	}
+}
+
+struct CameraData
+{
+	int reserved;
+	int itemSize;
+	int count;
+	int stageCountSize;
+	char stageCount[stageCountSize];		// maybe zero, converted to be int
+	CameraFrame frames[count];
+}
+
+struct CameraFrame
+{
+	int stageId;
+	long frameTime;
+	float radius;
+	float position[3];
+	float rotate[3];
+	float fov;
+	bool perspective;
+	InterpolationPoint interpolation[8];	// MoveA, MoveB, RotateA, RotateB, DistA, DistB, FovA, FovB
+	char reserved[MorphData.itemSize - 61];
+}
+
+struct LightData
+{
+	int reserved;
+	int itemSize;
+	int count;
+	int reserved2Size;
+	char reserved2[reserved2Size];		// maybe zero
+	LightFrame frames[count];
+}
+
+struct LightFrame
+{
+	long frameTime;
+	float position[3];
+	float color[3];
+	bool enabled;
+	char reserved[LightData.itemSize - 24];
+}
+
+struct ProjectData
+{
+	int reserved;
+	int itemSize;
+	int count;
+	int reserved2Size;
+	char reserved2[reserved2Size];		// maybe zero
+	ProjectFrame frames[count];
+}
+
+struct ProjectFrame
+{
+	long frameTime;
+	
+	// if (minortype != 0) {
+	float gravity;
+	float gravityVector[3];
+	// }
+
+	int selfShadowModel;			// 0: none, 1: depthShadow
+	float selfShadowDistance;
+	float selfShadowDeep;
+	char reserved[LightData.itemSize - (minortype != 0 ? 36 : 20)];
+}
