@@ -88,9 +88,9 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			return rt;
 		}
 
-		public void Write(BinaryWriter bw)
+		public void Write(BinaryWriter bw, VmdVersion version)
 		{
-			VmdDocument.WriteVmdString(bw, this.Name, 15);
+			VmdDocument.WriteVmdString(bw, this.Name, 15, version);
 			bw.Write(this.FrameTime);
 			this.Position.ForEach(bw.Write);
 			this.Quaternion.ForEach(bw.Write);

@@ -142,12 +142,12 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			return Encoding.GetString(br.ReadBytes(count).TakeWhile(_ => _ != '\0').ToArray());
 		}
 
-		internal static void WriteVmdString(BinaryWriter bw, string s, int count, byte padding = 0xFD)
+		internal static void WriteVmdString(BinaryWriter bw, string s, int count, VmdVersion version)
 		{
 			var bytes = Encoding.GetBytes(s);
 
-			bw.Write(bytes.Take(count).ToArray());
-			bw.Write(Enumerable.Repeat(padding, Math.Max(count - bytes.Length, 0)).Select((_, idx) => idx == 0 ? (byte)0 : _).ToArray());
+			bw.Write(bytes.Take(count - 1).ToArray());
+			bw.Write(Enumerable.Repeat(version == VmdVersion.MMDVer2 ? (byte)0 : (byte)0xFD, Math.Max(count - bytes.Length, 1)).Select((_, idx) => idx == 0 ? (byte)0 : _).ToArray());
 		}
 
 		public void Write(Stream stream)
@@ -156,19 +156,19 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			{
 				if (this.Version == VmdVersion.MMDVer2)
 				{
-					WriteVmdString(bw, "Vocaloid Motion Data file", 30, 0);
-					WriteVmdString(bw, this.ModelName, 10);
+					WriteVmdString(bw, "Vocaloid Motion Data file", 30, VmdVersion.MMDVer2);
+					WriteVmdString(bw, this.ModelName, 10, this.Version);
 				}
 				else
 				{
-					WriteVmdString(bw, "Vocaloid Motion Data 0002", 30, 0);
-					WriteVmdString(bw, this.ModelName, 20);
+					WriteVmdString(bw, "Vocaloid Motion Data 0002", 30, VmdVersion.MMDVer2);
+					WriteVmdString(bw, this.ModelName, 20, this.Version);
 				}
 
 				bw.Write(this.BoneFrames.Count);
-				this.BoneFrames.ForEach(_ => _.Write(bw));
+				this.BoneFrames.ForEach(_ => _.Write(bw, this.Version));
 				bw.Write(this.MorphFrames.Count);
-				this.MorphFrames.ForEach(_ => _.Write(bw));
+				this.MorphFrames.ForEach(_ => _.Write(bw, this.Version));
 				bw.Write(this.CameraFrames.Count);
 				this.CameraFrames.ForEach(_ => _.Write(bw));
 				bw.Write(this.LightFrames.Count);
