@@ -33,5 +33,10 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 			bw.Write(this.X);
 			bw.Write(this.Y);
 		}
+
+		public override string ToString()
+		{
+			return "{X:" + this.X + " Y:" + this.Y + "}";
+		}
 	}
 }
