@@ -105,7 +105,7 @@ struct BoneFrame
 	int stageId;
 	long frameTime;							// frameNumber = (long)((float)frameTime * (SystemController.FPS / Block.keyFps))
 	float position[3];
-	float quaternion[4];
+	float quaternion[4];					// X, Y, Z, W
 	InterpolationPoint interpolation[8];	// XA, XB, YA, YB, ZA, ZB, RA, RB
 	char reserved[BoneData.itemSize - 56];
 }
@@ -259,8 +259,8 @@ struct CameraFrame
 	long frameTime;
 	float radius;
 	float position[3];
-	float rotate[3];
-	float fov;
+	float rotate[3];						// X, Y, Z euler radians
+	float fov;								// radians
 	bool perspective;
 	InterpolationPoint interpolation[8];	// MoveA, MoveB, RotateA, RotateB, DistA, DistB, FovA, FovB
 	char reserved[MorphData.itemSize - 61];
