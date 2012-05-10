@@ -15,6 +15,9 @@ for .NET Framework 4.0 Client Profile
 * .elem
   Eflreina: エルフレイナ拡張モデルファイル
   Linearstar.Keystone.IO.Elfreina.ElDocument
+* .vmd
+  MikuMikuDance: Vocaloid Motion Data file
+  Linearstar.Keystone.IO.MikuMikuDance.VmdDocument
 * .mvd
   MikuMikuMoving: Motion Vector Data file
   Linearstar.Keystone.IO.MikuMikuMoving.MvdDocument

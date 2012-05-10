@@ -70,6 +70,15 @@
     <Compile Include="Metasequoia\MqShading.cs" />
     <Compile Include="Metasequoia\MqTokenizer.cs" />
     <Compile Include="Metasequoia\MqVertexColor.cs" />
+    <Compile Include="MikuMikuDance\Vmd\VmdCameraFrame.cs" />
+    <Compile Include="MikuMikuDance\Vmd\VmdDocument.cs" />
+    <Compile Include="MikuMikuDance\Vmd\VmdInterpolationPoint.cs" />
+    <Compile Include="MikuMikuDance\Vmd\VmdLightFrame.cs" />
+    <Compile Include="MikuMikuDance\Vmd\VmdBoneFrame.cs" />
+    <Compile Include="MikuMikuDance\Vmd\VmdSelfShadowFrame.cs" />
+    <Compile Include="MikuMikuDance\Vmd\VmdMorphFrame.cs" />
+    <Compile Include="MikuMikuDance\Vmd\VmdSelfShadowModel.cs" />
+    <Compile Include="MikuMikuDance\Vmd\VmdVersion.cs" />
     <Compile Include="MikuMikuMoving\MvdInterpolationPoint.cs" />
     <Compile Include="MikuMikuMoving\MvdAccessoryPropertyData.cs" />
     <Compile Include="MikuMikuMoving\MvdAccessoryPropertyFrame.cs" />
@@ -104,12 +113,11 @@
     <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
+    <Content Include="MikuMikuDance\Vmd\VmdFormat.txt" />
     <Content Include="MikuMikuMoving\MvdFormat.txt" />
     <Content Include="readme.txt" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

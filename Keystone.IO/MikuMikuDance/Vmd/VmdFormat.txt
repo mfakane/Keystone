@@ -1,0 +1,88 @@
+﻿// .vmd format definition
+// bool: _Bool (true: value != 0, false: value == 0)
+// char: uint8_t
+
+struct Format
+{
+	char format[30];	// "Vocaloid Motion Data file" or "Vocaloid Motion Data 0002" ASCII
+	// if format == "Vocaloid Motion Data file", use MMD_2 definition. otherwise, use MMD_3 definition.
+
+#if MMD_2
+	char objectName[10];	// Shift_JIS string
+#else
+	char objectName[20];	// Shift_JIS string
+#endif
+	
+	DWORD boneFrameCount;
+	BoneFrame boneFrames[boneFrameCount];
+	DWORD morphFrameCount;
+	MorphFrame morphFrames[morphFrameCount];
+	DWORD cameraFrameCount;
+	CameraFrame cameraFrames[cameraFrameCount];
+	DWORD lightFrameCount;
+	LightFrame lightFrames[lightFrameCount];
+
+	// if (mmd_version > 6.19) {
+	DWORD selfShadowFrameCount;
+	SelfShadowFrame selfShadowFrames[selfShadowFrameCount];
+	// }
+}
+
+struct BoneFrame
+{
+	char name[15];			// Shift_JIS string
+	DWORD frameTime;
+	float position[3];
+	float quaternion[4];	// X, Y, Z, W
+	char interpolation[64];
+	/* interpolation content
+	X_x1, Y_x1, Z_x1, R_x1, X_y1, Y_y1, Z_y1, R_y1, 
+	X_x2, Y_x2, Z_x2, R_x2, X_y2, Y_y2, Z_y2, R_y2, 
+	Y_x1, Z_x1, R_x1, X_y1, Y_y1, Z_y1, R_y1, X_x2, 
+	Y_x2, Z_x2, R_x2, X_y2, Y_y2, Z_y2, R_y2,   01, 
+	Z_x1, R_x1, X_y1, Y_y1, Z_y1, R_y1, X_x2, Y_x2, 
+	Z_x2, R_x2, X_y2, Y_y2, Z_y2, R_y2,   01,   00, 
+	R_x1, X_y1, Y_y1, Z_y1, R_y1, X_x2, Y_x2, Z_x2, 
+	R_x2, X_y2, Y_y2, Z_y2, R_y2,   01,   00,   00
+	 */
+}
+
+struct MorphFrame
+{
+	char name[15];			// Shift_JIS string
+	DWORD frameTime;
+	float weight;
+}
+
+struct CameraFrame
+{
+	DWORD frameTime;
+	float radius;
+	float position[3];
+	float rotate[3];		// X, Y, Z euler radians
+	char interpolation[24];
+	/* interpolation content, R: rotate, L: radius, V: fov
+	X_x1, X_x2, X_y1, X_y2
+	Y_x1, Y_x2, Y_y1, Y_y2
+	Z_x1, Z_x2, Z_y1, Z_y2
+	R_x1, R_x2, R_y1, R_y2
+	L_x1, L_x2, L_y1, L_y2
+	V_x1, V_x2, V_y1, V_y2
+	*/
+	int fov;				// degree
+	bool ortho;
+}
+
+struct LightFrame
+{
+	DWORD frameTime;
+	float color[3];		// R, G, B
+	float position[3];
+}
+
+struct SelfShadowFrame
+{
+	DWORD frameTime;
+	char model;			// 0: none, 1: model1, 2: model2
+	float distance;		// (10000 - distance_on_mmd) / 100000
+}
