@@ -12,7 +12,7 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 
 		public static byte[] ReadSizedBuffer(this BinaryReader br)
 		{
-			return br.Read(br.ReadInt32());
+			return br.ReadBytes(br.ReadInt32());
 		}
 
 		public static void WriteSizedBuffer(this BinaryWriter bw, byte[] buffer)

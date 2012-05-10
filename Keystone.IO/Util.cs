@@ -13,18 +13,6 @@ namespace Linearstar.Keystone.IO
 			return (T)Enum.Parse(typeof(T), value, false);
 		}
 
-		public static byte[] Read(this BinaryReader self, int count)
-		{
-			if (count == 0)
-				return new byte[0];
-
-			var buf = new byte[count];
-
-			Array.Resize(ref buf, self.Read(buf, 0, count));
-
-			return buf;
-		}
-
 		public static long GetRemainingLength(this BinaryReader self)
 		{
 			return self.BaseStream.Length - self.BaseStream.Position;

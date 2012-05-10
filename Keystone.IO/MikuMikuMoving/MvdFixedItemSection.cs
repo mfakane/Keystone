@@ -24,7 +24,7 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 				throw new InvalidOperationException("RawItemSize must be greater than 0.");
 
 			for (int i = 0; i < this.RawCount; i++)
-				using (var ir = new BinaryReader(new MemoryStream(br.Read(this.RawItemSize))))
+				using (var ir = new BinaryReader(new MemoryStream(br.ReadBytes(this.RawItemSize))))
 					ReadItem(document, ir);
 		}
 

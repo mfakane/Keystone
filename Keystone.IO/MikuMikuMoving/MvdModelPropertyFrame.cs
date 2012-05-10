@@ -83,7 +83,7 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 			if (mpd.MinorType >= 1)
 			{
 				rt.PhysicsStillMode = br.ReadBoolean();
-				br.Read(3);		// reserved[3]
+				br.ReadBytes(3);		// reserved[3]
 			}
 
 			rt.EdgeWidth = br.ReadSingle();

@@ -101,7 +101,7 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 
 		static string ReadMvdString(BinaryReader br, int count, Encoding encoding)
 		{
-			return encoding.GetString(br.Read(count).TakeWhile(_ => _ != '\0').ToArray());
+			return encoding.GetString(br.ReadBytes(count).TakeWhile(_ => _ != '\0').ToArray());
 		}
 
 		public void Write(Stream stream)
