@@ -92,7 +92,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			this.FovInterpolation = new[] { VmdInterpolationPoint.DefaultA, VmdInterpolationPoint.DefaultB };
 		}
 
-		public static VmdCameraFrame Parse(BinaryReader br)
+		public static VmdCameraFrame Parse(BinaryReader br, VmdVersion version)
 		{
 			var rt = new VmdCameraFrame
 			{
@@ -102,32 +102,43 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 				Angle = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() },
 			};
 
-			rt.XInterpolation = ReadInterpolationPair(br);
-			rt.YInterpolation = ReadInterpolationPair(br);
-			rt.ZInterpolation = ReadInterpolationPair(br);
-			rt.AngleInterpolation = ReadInterpolationPair(br);
-			rt.RadiusInterpolation = ReadInterpolationPair(br);
-			rt.FovInterpolation = ReadInterpolationPair(br);
-			rt.FovInDegree = br.ReadInt32();
-			rt.Ortho = br.ReadBoolean();
+			if (version == VmdVersion.MMDVer3)
+			{
+				rt.XInterpolation = ReadInterpolationPair(br);
+				rt.YInterpolation = ReadInterpolationPair(br);
+				rt.ZInterpolation = ReadInterpolationPair(br);
+				rt.AngleInterpolation = ReadInterpolationPair(br);
+				rt.RadiusInterpolation = ReadInterpolationPair(br);
+				rt.FovInterpolation = ReadInterpolationPair(br);
+				rt.FovInDegree = br.ReadInt32();
+				rt.Ortho = br.ReadBoolean();
+			}
+			else
+				rt.AngleInterpolation = ReadInterpolationPair(br);
 
 			return rt;
 		}
 
-		public void Write(BinaryWriter bw)
+		public void Write(BinaryWriter bw, VmdVersion version)
 		{
 			bw.Write(this.FrameTime);
 			bw.Write(this.Radius);
 			this.Position.ForEach(bw.Write);
 			this.Angle.ForEach(bw.Write);
-			WriteInterpolationPair(bw, this.XInterpolation);
-			WriteInterpolationPair(bw, this.YInterpolation);
-			WriteInterpolationPair(bw, this.ZInterpolation);
-			WriteInterpolationPair(bw, this.AngleInterpolation);
-			WriteInterpolationPair(bw, this.RadiusInterpolation);
-			WriteInterpolationPair(bw, this.FovInterpolation);
-			bw.Write(this.FovInDegree);
-			bw.Write(this.Ortho);
+
+			if (version == VmdVersion.MMDVer3)
+			{
+				WriteInterpolationPair(bw, this.XInterpolation);
+				WriteInterpolationPair(bw, this.YInterpolation);
+				WriteInterpolationPair(bw, this.ZInterpolation);
+				WriteInterpolationPair(bw, this.AngleInterpolation);
+				WriteInterpolationPair(bw, this.RadiusInterpolation);
+				WriteInterpolationPair(bw, this.FovInterpolation);
+				bw.Write(this.FovInDegree);
+				bw.Write(this.Ortho);
+			}
+			else
+				WriteInterpolationPair(bw, this.AngleInterpolation);
 		}
 
 		static VmdInterpolationPoint[] ReadInterpolationPair(BinaryReader br)

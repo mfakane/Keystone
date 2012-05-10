@@ -87,7 +87,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 				rt.BoneFrames.AddRange(ReadBoneFrames(br));
 				rt.MorphFrames.AddRange(ReadMorphFrames(br));
-				rt.CameraFrames.AddRange(ReadCameraFrames(br));
+				rt.CameraFrames.AddRange(ReadCameraFrames(br, rt.Version));
 				rt.LightFrames.AddRange(ReadLightFrames(br));
 
 				if (br.GetRemainingLength() > 4)
@@ -113,12 +113,12 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 				yield return VmdMorphFrame.Parse(br);
 		}
 
-		static IEnumerable<VmdCameraFrame> ReadCameraFrames(BinaryReader br)
+		static IEnumerable<VmdCameraFrame> ReadCameraFrames(BinaryReader br, VmdVersion version)
 		{
 			var count = br.ReadUInt32();
 
 			for (uint i = 0; i < count; i++)
-				yield return VmdCameraFrame.Parse(br);
+				yield return VmdCameraFrame.Parse(br, version);
 		}
 
 		static IEnumerable<VmdLightFrame> ReadLightFrames(BinaryReader br)
@@ -170,7 +170,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 				bw.Write(this.MorphFrames.Count);
 				this.MorphFrames.ForEach(_ => _.Write(bw, this.Version));
 				bw.Write(this.CameraFrames.Count);
-				this.CameraFrames.ForEach(_ => _.Write(bw));
+				this.CameraFrames.ForEach(_ => _.Write(bw, this.Version));
 				bw.Write(this.LightFrames.Count);
 				this.LightFrames.ForEach(_ => _.Write(bw));
 
@@ -179,6 +179,8 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 					bw.Write(this.SelfShadowFrames.Count);
 					this.SelfShadowFrames.ForEach(_ => _.Write(bw));
 				}
+
+				bw.Write(0);
 			}
 		}
 	}
