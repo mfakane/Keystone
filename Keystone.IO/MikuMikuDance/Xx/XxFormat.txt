@@ -8,7 +8,7 @@ struct Format
 	DWORD lineCount;
 	Line lines[lineCount];
 	DWORD materialCount;
-	Matrial materials[materialCount];
+	Material materials[materialCount];
 }
 
 struct Vertex
@@ -31,5 +31,5 @@ struct Material
 	float specular[3];
 	float ambient[3];
 	DWORD lineCountPerMaterial;
-	char texture[256];	// Shift_JIS string
+	char texture[256];	// Shift_JIS string, ends with 0x00, padded by 0xFD, all 0x00 if empty
 }
