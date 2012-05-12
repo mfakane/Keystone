@@ -7,11 +7,11 @@ using System.Text;
 namespace Linearstar.Keystone.IO.MikuMikuDance
 {
 	/// <summary>
-	/// Vocaloid Motion Data created by Higuchi_U
+	/// Vocaloid Motion Data file created by Higuchi_U
 	/// </summary>
 	public class VmdDocument
 	{
-		public const string DisplayName = "Vocaloid Motion Data";
+		public const string DisplayName = "Vocaloid Motion Data file";
 		public const string Filter = "*.vmd";
 		public static readonly Encoding Encoding = Encoding.GetEncoding(932);
 
