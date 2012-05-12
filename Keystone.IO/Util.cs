@@ -49,6 +49,14 @@ namespace Linearstar.Keystone.IO
 				action(i);
 		}
 
+		public static void ForEach<T>(this IEnumerable<T> self, Action<T, int> action)
+		{
+			var idx = 0;
+
+			foreach (var i in self)
+				action(i, idx++);
+		}
+
 		public static IEnumerable<T> Repeat<T>(T element)
 		{
 			while (true)

@@ -7,20 +7,59 @@
 for .NET Framework 4.0 Client Profile
 その他のライブラリは要求しません。
 
-以下の形式に対応:
 
-* .mqo
-  Metasequoia: メタセコイア オブジェクト
-  Linearstar.Keystone.IO.Metasequoia.MqDocument
+対応形式
+=======
+
+Metasequoia
+-----------
+
+名前空間: Linearstar.Keystone.IO.Metasequoia
+
+* .mqo, .mqm
+  メタセコイア オブジェクト
+  MqDocument
+
+
+Elfreina
+--------
+
+名前空間: Linearstar.Keystone.IO.Elfreina
+
 * .elem
-  Eflreina: エルフレイナ拡張モデルファイル
-  Linearstar.Keystone.IO.Elfreina.ElDocument
+  エルフレイナ拡張モデルファイル
+  ElDocument
+
+
+MikuMikuDance
+-------------
+
+名前空間: Linearstar.Keystone.IO.MikuMikuDance
+
+* .xx
+  XX file
+  XxDocument
+* .osm
+  One Skin Model file
+  OsmDocument
 * .vmd
-  MikuMikuDance: Vocaloid Motion Data file
-  Linearstar.Keystone.IO.MikuMikuDance.VmdDocument
+  Vocaloid Motion Data file
+  VmdDocument
+* .vpd
+  Vocaloid Pose Data file
+  VpdDocument
+* .vac
+  Vocaloid Accessory Connection file
+  VacDocument
+
+MikuMikuMoving
+--------------
+
+名前空間: Linearstar.Keystone.IO.MikuMikuMoving
+
 * .mvd
   MikuMikuMoving: Motion Vector Data file
-  Linearstar.Keystone.IO.MikuMikuMoving.MvdDocument
+  MvdDocument
 
 
 使用方法
