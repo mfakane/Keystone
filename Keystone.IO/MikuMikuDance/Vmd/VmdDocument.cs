@@ -70,7 +70,6 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 		public static VmdDocument Parse(Stream stream)
 		{
 			var rt = new VmdDocument();
-			var encoding = Encoding.GetEncoding(932);
 
 			using (var br = new BinaryReader(stream))
 			{
