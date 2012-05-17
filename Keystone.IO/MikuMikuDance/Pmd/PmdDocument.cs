@@ -212,17 +212,21 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 				if (br.GetRemainingLength() > 0)
 				{
 					rt.EnglishCompatible = br.ReadBoolean();
-					rt.EnglishModelName = ReadPmdString(br, 20);
-					rt.EnglishDescription = ReadPmdString(br, 256);
 
-					for (ushort i = 0; i < bones; i++)
-						rt.EnglishBoneNames.Add(ReadPmdString(br, 20));
+					if (rt.EnglishCompatible)
+					{
+						rt.EnglishModelName = ReadPmdString(br, 20);
+						rt.EnglishDescription = ReadPmdString(br, 256);
 
-					for (ushort i = 0; i < morphs - 1; i++)
-						rt.EnglishMorphNames.Add(ReadPmdString(br, 20));
+						for (ushort i = 0; i < bones; i++)
+							rt.EnglishBoneNames.Add(ReadPmdString(br, 20));
 
-					for (byte i = 0; i < visibleBoneCategories; i++)
-						rt.EnglishVisibleBoneCategories.Add(ReadPmdString(br, 50));
+						for (ushort i = 0; i < morphs - 1; i++)
+							rt.EnglishMorphNames.Add(ReadPmdString(br, 20));
+
+						for (byte i = 0; i < visibleBoneCategories; i++)
+							rt.EnglishVisibleBoneCategories.Add(ReadPmdString(br, 50));
+					}
 
 					rt.ToonFileNames = Enumerable.Range(0, 10).Select(_ => ReadPmdString(br, 100)).ToList();
 
@@ -291,11 +295,15 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 				});
 
 				bw.Write(this.EnglishCompatible);
-				WritePmdString(bw, this.EnglishModelName, 20);
-				WritePmdString(bw, this.EnglishDescription, 256);
-				Enumerable.Range(0, this.Bones.Count).Select(_ => _ < this.EnglishBoneNames.Count ? this.EnglishBoneNames[_] : null).ForEach(_ => WritePmdString(bw, _, 20));
-				Enumerable.Range(0, this.Morphs.Count - 1).Select(_ => _ < this.EnglishMorphNames.Count ? this.EnglishMorphNames[_] : null).ForEach(_ => WritePmdString(bw, _, 20));
-				Enumerable.Range(0, this.VisibleBoneCategories.Count).Select(_ => _ < this.EnglishVisibleBoneCategories.Count ? this.EnglishVisibleBoneCategories[_] : null).ForEach(_ => WritePmdString(bw, _, 50));
+
+				if (this.EnglishCompatible)
+				{
+					WritePmdString(bw, this.EnglishModelName, 20);
+					WritePmdString(bw, this.EnglishDescription, 256);
+					Enumerable.Range(0, this.Bones.Count).Select(_ => _ < this.EnglishBoneNames.Count ? this.EnglishBoneNames[_] : null).ForEach(_ => WritePmdString(bw, _, 20));
+					Enumerable.Range(0, this.Morphs.Count - 1).Select(_ => _ < this.EnglishMorphNames.Count ? this.EnglishMorphNames[_] : null).ForEach(_ => WritePmdString(bw, _, 20));
+					Enumerable.Range(0, this.VisibleBoneCategories.Count).Select(_ => _ < this.EnglishVisibleBoneCategories.Count ? this.EnglishVisibleBoneCategories[_] : null).ForEach(_ => WritePmdString(bw, _, 50));
+				}
 
 				Enumerable.Range(0, 10).Select(_ => _ < this.ToonFileNames.Count ? this.ToonFileNames[_] : null).ForEach(_ => WritePmdString(bw, _, 100));
 
