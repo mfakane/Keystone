@@ -43,28 +43,28 @@ namespace Linearstar.Keystone.IO.Elfreina
 			set;
 		}
 
-		public List<float> BoneAnimationTimeKeys
+		public IList<float> BoneAnimationTimeKeys
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<ElBoneAnimationPart> BoneAnimation
+		public IList<ElBoneAnimationPart> BoneAnimation
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<float> UVAnimationTimeKeys
+		public IList<float> UVAnimationTimeKeys
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<ElUVAnimationPart> UVAnimation
+		public IList<ElUVAnimationPart> UVAnimation
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public ElAnimationData()
@@ -110,13 +110,13 @@ namespace Linearstar.Keystone.IO.Elfreina
 
 						break;
 					case "BoneAnimation":
-						rt.BoneAnimationTimeKeys.AddRange(i.Child("TimeKeys").Children.Select(_ => float.Parse(_.Values.First())));
-						rt.BoneAnimation.AddRange(i.Children.Where(_ => _.Name == "AnimationPart").Select(ElBoneAnimationPart.Parse));
+						rt.BoneAnimationTimeKeys = i.Child("TimeKeys").Children.Select(_ => float.Parse(_.Values.First())).ToList();
+						rt.BoneAnimation = i.Children.Where(_ => _.Name == "AnimationPart").Select(ElBoneAnimationPart.Parse).ToList();
 
 						break;
 					case "UVAnimation":
-						rt.UVAnimationTimeKeys.AddRange(i.Child("TimeKeys").Children.Select(_ => float.Parse(_.Values.First())));
-						rt.UVAnimation.AddRange(i.Children.Where(_ => _.Name == "AnimationPart").Select(ElUVAnimationPart.Parse));
+						rt.UVAnimationTimeKeys = i.Child("TimeKeys").Children.Select(_ => float.Parse(_.Values.First())).ToList();
+						rt.UVAnimation = i.Children.Where(_ => _.Name == "AnimationPart").Select(ElUVAnimationPart.Parse).ToList();
 
 						break;
 				}

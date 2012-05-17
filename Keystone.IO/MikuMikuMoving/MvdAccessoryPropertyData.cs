@@ -5,10 +5,10 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 {
 	public class MvdAccessoryPropertyData : MvdFixedItemSection
 	{
-		public List<MvdAccessoryPropertyFrame> Frames
+		public IList<MvdAccessoryPropertyFrame> Frames
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public MvdAccessoryPropertyData()

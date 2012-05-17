@@ -86,10 +86,10 @@ namespace Linearstar.Keystone.IO.Metasequoia
 		/// <summary>
 		/// dirlights
 		/// </summary>
-		public List<MqDirectionalLight> DirectionalLights
+		public IList<MqDirectionalLight> DirectionalLights
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public MqScene()
@@ -146,7 +146,7 @@ namespace Linearstar.Keystone.IO.Metasequoia
 
 						break;
 					case "dirlights":
-						rt.DirectionalLights.AddRange(i.Children.Select(MqDirectionalLight.Parse));
+						rt.DirectionalLights = i.Children.Select(MqDirectionalLight.Parse).ToList();
 
 						break;
 				}

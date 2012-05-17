@@ -5,10 +5,10 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 {
 	public class MvdNameList : MvdSection
 	{
-		public Dictionary<int, string> Names
+		public IDictionary<int, string> Names
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public MvdNameList()

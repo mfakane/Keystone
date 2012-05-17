@@ -19,10 +19,10 @@ namespace Linearstar.Keystone.IO.Elfreina
 			set;
 		}
 
-		public Dictionary<int, float> VertexBlend
+		public IDictionary<int, float> VertexBlend
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public ElBlendPart()

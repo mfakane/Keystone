@@ -19,28 +19,28 @@ namespace Linearstar.Keystone.IO.Elfreina
 			set;
 		}
 
-		public List<float> TimeKeys
+		public IList<float> TimeKeys
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<float[]> TransKeys
+		public IList<float[]> TransKeys
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<float[]> RotateKeys
+		public IList<float[]> RotateKeys
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<float[]> ScaleKeys
+		public IList<float[]> ScaleKeys
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public ElUVAnimationPart()
@@ -70,19 +70,19 @@ namespace Linearstar.Keystone.IO.Elfreina
 
 						break;
 					case "TimeKeys":
-						rt.TimeKeys.AddRange(i.Children.Select(_ => float.Parse(_.Values.First())));
+						rt.TimeKeys = i.Children.Select(_ => float.Parse(_.Values.First())).ToList();
 
 						break;
 					case "TransKeys":
-						rt.TransKeys.AddRange(i.Children.Select(_ => _.Values.Select(float.Parse).ToArray()));
+						rt.TransKeys = i.Children.Select(_ => _.Values.Select(float.Parse).ToArray()).ToList();
 
 						break;
 					case "RotateKeys":
-						rt.RotateKeys.AddRange(i.Children.Select(_ => _.Values.Select(float.Parse).ToArray()));
+						rt.RotateKeys = i.Children.Select(_ => _.Values.Select(float.Parse).ToArray()).ToList();
 
 						break;
 					case "ScaleKeys":
-						rt.ScaleKeys.AddRange(i.Children.Select(_ => _.Values.Select(float.Parse).ToArray()));
+						rt.ScaleKeys = i.Children.Select(_ => _.Values.Select(float.Parse).ToArray()).ToList();
 
 						break;
 				}

@@ -5,10 +5,10 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 {
 	public class MvdMorphData : MvdFixedItemSection
 	{
-		public List<MvdMorphFrame> Frames
+		public IList<MvdMorphFrame> Frames
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public int Key

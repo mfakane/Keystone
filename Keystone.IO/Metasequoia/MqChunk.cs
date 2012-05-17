@@ -17,22 +17,22 @@ namespace Linearstar.Keystone.IO.Metasequoia
 			set;
 		}
 
-		public List<string> Arguments
+		public IList<string> Arguments
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<MqChunkAttribute> Attributes
+		public IList<MqChunkAttribute> Attributes
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<MqChunk> Children
+		public IList<MqChunk> Children
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public bool AlwaysHaveChildren
@@ -56,7 +56,7 @@ namespace Linearstar.Keystone.IO.Metasequoia
 		public MqChunk SetArguments(params string[] args)
 		{
 			this.Arguments.Clear();
-			this.Arguments.AddRange(args);
+			this.Arguments = args.ToList();
 
 			return this;
 		}
@@ -69,7 +69,7 @@ namespace Linearstar.Keystone.IO.Metasequoia
 		public MqChunk SetAttributes(params MqChunkAttribute[] attrs)
 		{
 			this.Attributes.Clear();
-			this.Attributes.AddRange(attrs);
+			this.Attributes = attrs.ToList();
 
 			return this;
 		}
@@ -83,7 +83,7 @@ namespace Linearstar.Keystone.IO.Metasequoia
 		{
 			this.AlwaysHaveChildren = true;
 			this.Children.Clear();
-			this.Children.AddRange(children);
+			this.Children = children.ToList();
 
 			return this;
 		}
@@ -161,8 +161,9 @@ namespace Linearstar.Keystone.IO.Metasequoia
 
 			if (tokenizer.Current.Kind == MqTokenizer.BeginChildrenTokenKind)
 			{
-				rt.Children.AddRange(tokenizer.TakeWhile(_ => _.Kind != MqTokenizer.EndChildrenTokenKind)
-											  .Select(_ => Parse(tokenizer)));
+				rt.Children = tokenizer.TakeWhile(_ => _.Kind != MqTokenizer.EndChildrenTokenKind)
+									   .Select(_ => Parse(tokenizer))
+									   .ToList();
 				tokenizer.MoveNext(MqTokenizer.EndChildrenTokenKind);
 			}
 

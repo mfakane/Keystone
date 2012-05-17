@@ -24,16 +24,16 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 		/// これは Kind == None の場合、モデルの頂点インデックスです。
 		/// それ以外の場合、Kind == None の Indices におけるインデックスです。
 		/// </summary>
-		public List<ushort> Indices
+		public IList<ushort> Indices
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<float[]> Offsets
+		public IList<float[]> Offsets
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public OsmMorph()

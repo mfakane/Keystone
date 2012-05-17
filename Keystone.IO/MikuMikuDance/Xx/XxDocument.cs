@@ -15,22 +15,22 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 		public const string Filter = "*.xx";
 		public static readonly Encoding Encoding = Encoding.GetEncoding(932);
 
-		public List<XxVertex> Vertices
+		public IList<XxVertex> Vertices
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<XxLine> Lines
+		public IList<XxLine> Lines
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<XxMaterial> Materials
+		public IList<XxMaterial> Materials
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public XxDocument()

@@ -191,7 +191,7 @@ namespace Linearstar.Keystone.IO.Metasequoia
 		/// <summary>
 		/// vertex
 		/// </summary>
-		public List<float[]> Vertex
+		public IList<float[]> Vertex
 		{
 			get;
 			private set;
@@ -200,7 +200,7 @@ namespace Linearstar.Keystone.IO.Metasequoia
 		/// <summary>
 		/// weit
 		/// </summary>
-		public Dictionary<int, float> Weight
+		public IDictionary<int, float> Weight
 		{
 			get;
 			private set;
@@ -209,7 +209,7 @@ namespace Linearstar.Keystone.IO.Metasequoia
 		/// <summary>
 		/// face
 		/// </summary>
-		public List<MqFace> Faces
+		public IList<MqFace> Faces
 		{
 			get;
 			private set;

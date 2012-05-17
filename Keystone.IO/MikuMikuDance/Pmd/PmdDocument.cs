@@ -30,58 +30,58 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
-		public List<PmdVertex> Vertices
+		public IList<PmdVertex> Vertices
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<ushort> Indices
+		public IList<ushort> Indices
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<PmdMaterial> Materials
+		public IList<PmdMaterial> Materials
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<PmdBone> Bones
+		public IList<PmdBone> Bones
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<PmdIK> IK
+		public IList<PmdIK> IK
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<PmdMorph> Morphs
+		public IList<PmdMorph> Morphs
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<ushort> VisibleMorphs
+		public IList<ushort> VisibleMorphs
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<string> VisibleBoneCategories
+		public IList<string> VisibleBoneCategories
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public Dictionary<short, byte> VisibleBones
+		public IDictionary<short, byte> VisibleBones
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public bool EnglishCompatible
@@ -102,40 +102,40 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
-		public List<string> EnglishBoneNames
+		public IList<string> EnglishBoneNames
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<string> EnglishMorphNames
+		public IList<string> EnglishMorphNames
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<string> EnglishVisibleBoneCategories
+		public IList<string> EnglishVisibleBoneCategories
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<string> ToonFileNames
+		public IList<string> ToonFileNames
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<PmdRigidBody> Rigids
+		public IList<PmdRigidBody> Rigids
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<PmdConstraint> Constraints
+		public IList<PmdConstraint> Constraints
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public PmdDocument()
@@ -224,7 +224,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 					for (byte i = 0; i < visibleBoneCategories; i++)
 						rt.EnglishVisibleBoneCategories.Add(ReadPmdString(br, 50));
 
-					rt.ToonFileNames.AddRange(Enumerable.Range(0, 10).Select(_ => ReadPmdString(br, 100)));
+					rt.ToonFileNames = Enumerable.Range(0, 10).Select(_ => ReadPmdString(br, 100)).ToList();
 
 					for (var i = br.ReadInt32() - 1; i >= 0; i--)
 						rt.Rigids.Add(PmdRigidBody.Parse(br));

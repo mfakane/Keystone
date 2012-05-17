@@ -7,16 +7,16 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 {
 	public class MvdEffectPropertyData : MvdFixedItemSection
 	{
-		public List<MvdEffectPropertyFrame> Frames
+		public IList<MvdEffectPropertyFrame> Frames
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<MvdEffectParameter> Parameters
+		public IList<MvdEffectParameter> Parameters
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public MvdEffectPropertyData()
@@ -29,7 +29,7 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 		protected override void ReadExtensionRegion(MvdDocument document, BinaryReader br)
 		{
 			if (br.GetRemainingLength() >= 4)
-				this.Parameters.AddRange(Enumerable.Range(0, br.ReadInt32()).Select(_ => MvdEffectParameter.Parse(br)));
+				this.Parameters = Enumerable.Range(0, br.ReadInt32()).Select(_ => MvdEffectParameter.Parse(br)).ToList();
 		}
 
 		protected override void ReadItem(MvdDocument document, BinaryReader br)

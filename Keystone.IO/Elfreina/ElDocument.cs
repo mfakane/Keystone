@@ -27,34 +27,34 @@ namespace Linearstar.Keystone.IO.Elfreina
 			set;
 		}
 
-		public List<ElMeshContainer> MeshDataList
+		public IList<ElMeshContainer> MeshDataList
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<ElNode> HierarchyList
+		public IList<ElNode> HierarchyList
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public Dictionary<string, List<string>> RenderingMeshList
+		public IDictionary<string, IList<string>> RenderingMeshList
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<ElAnimationData> AnimationList
+		public IList<ElAnimationData> AnimationList
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<ElData> CustomData
+		public IList<ElData> CustomData
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public ElDocument()
@@ -62,7 +62,7 @@ namespace Linearstar.Keystone.IO.Elfreina
 			this.MeshDataList = new List<ElMeshContainer>();
 			this.CustomData = new List<ElData>();
 			this.HierarchyList = new List<ElNode>();
-			this.RenderingMeshList = new Dictionary<string, List<string>>();
+			this.RenderingMeshList = new Dictionary<string, IList<string>>();
 			this.AnimationList = new List<ElAnimationData>();
 		}
 
@@ -92,11 +92,11 @@ namespace Linearstar.Keystone.IO.Elfreina
 
 							break;
 						case "MeshDataList":
-							rt.MeshDataList.AddRange(data.Children.Where(_ => _.Name == "MeshContainer").Select(ElMeshContainer.Parse));
+							rt.MeshDataList = data.Children.Where(_ => _.Name == "MeshContainer").Select(ElMeshContainer.Parse).ToList();
 
 							break;
 						case "HierarchyList":
-							rt.HierarchyList.AddRange(data.Children.Select(ElNode.Parse));
+							rt.HierarchyList = data.Children.Select(ElNode.Parse).ToList();
 
 							break;
 						case "RenderingMeshList":
@@ -105,7 +105,7 @@ namespace Linearstar.Keystone.IO.Elfreina
 
 							break;
 						case "AnimationList":
-							rt.AnimationList.AddRange(data.Children.Where(_ => _.Name == "AnimationData").Select(ElAnimationData.Parse));
+							rt.AnimationList = data.Children.Where(_ => _.Name == "AnimationData").Select(ElAnimationData.Parse).ToList();
 
 							break;
 						default:

@@ -30,10 +30,10 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
-		public List<int> BindedBones
+		public IList<int> BindedBones
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public OsmIK()

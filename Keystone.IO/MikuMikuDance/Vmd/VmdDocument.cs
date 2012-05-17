@@ -27,34 +27,34 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
-		public List<VmdBoneFrame> BoneFrames
+		public IList<VmdBoneFrame> BoneFrames
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<VmdMorphFrame> MorphFrames
+		public IList<VmdMorphFrame> MorphFrames
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<VmdCameraFrame> CameraFrames
+		public IList<VmdCameraFrame> CameraFrames
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<VmdLightFrame> LightFrames
+		public IList<VmdLightFrame> LightFrames
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<VmdSelfShadowFrame> SelfShadowFrames
+		public IList<VmdSelfShadowFrame> SelfShadowFrames
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public VmdDocument()
@@ -84,13 +84,13 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 				rt.ModelName = ReadVmdString(br, rt.Version == VmdVersion.MMDVer2 ? 10 : 20);
 
-				rt.BoneFrames.AddRange(ReadBoneFrames(br));
-				rt.MorphFrames.AddRange(ReadMorphFrames(br));
-				rt.CameraFrames.AddRange(ReadCameraFrames(br, rt.Version));
-				rt.LightFrames.AddRange(ReadLightFrames(br));
+				rt.BoneFrames = ReadBoneFrames(br).ToList();
+				rt.MorphFrames= ReadMorphFrames(br).ToList();
+				rt.CameraFrames= ReadCameraFrames(br, rt.Version).ToList();
+				rt.LightFrames = ReadLightFrames(br).ToList();
 
 				if (br.GetRemainingLength() > 4)
-					rt.SelfShadowFrames.AddRange(ReadSelfShadowFrames(br));
+					rt.SelfShadowFrames = ReadSelfShadowFrames(br).ToList();
 			}
 
 			return rt;

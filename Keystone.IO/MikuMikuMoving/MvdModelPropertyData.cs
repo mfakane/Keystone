@@ -7,10 +7,10 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 {
 	public class MvdModelPropertyData : MvdFixedItemSection
 	{
-		public List<MvdModelPropertyFrame> Frames
+		public IList<MvdModelPropertyFrame> Frames
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public int[] IKBones

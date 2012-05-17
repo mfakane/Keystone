@@ -19,10 +19,10 @@ namespace Linearstar.Keystone.IO.Elfreina
 			set;
 		}
 
-		public List<ElNode> Nodes
+		public IList<ElNode> Nodes
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public ElNode()

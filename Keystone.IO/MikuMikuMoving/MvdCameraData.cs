@@ -6,10 +6,10 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 {
 	public class MvdCameraData : MvdFixedItemSection
 	{
-		public List<MvdCameraFrame> Frames
+		public IList<MvdCameraFrame> Frames
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public int StageCount

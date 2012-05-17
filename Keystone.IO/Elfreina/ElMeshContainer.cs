@@ -14,34 +14,34 @@ namespace Linearstar.Keystone.IO.Elfreina
 			set;
 		}
 
-		public List<ElVertexFormat> VertexFormat
+		public IList<ElVertexFormat> VertexFormat
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<string> BoneNames
+		public IList<string> BoneNames
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<float[]> OffsetMatrices
+		public IList<float[]> OffsetMatrices
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<ElMaterial> Materials
+		public IList<ElMaterial> Materials
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<ElMesh> Meshes
+		public IList<ElMesh> Meshes
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public ElMeshContainer()
@@ -68,19 +68,19 @@ namespace Linearstar.Keystone.IO.Elfreina
 
 						break;
 					case "VertexFormat":
-						rt.VertexFormat.AddRange(i.Children.Select(_ => Util.ParseEnum<ElVertexFormat>(_.Values.First().Trim('"'))));
+						rt.VertexFormat = i.Children.Select(_ => Util.ParseEnum<ElVertexFormat>(_.Values.First().Trim('"'))).ToList();
 
 						break;
 					case "BoneNames":
-						rt.BoneNames.AddRange(i.Children.Select(_ => _.Values.First().Trim('"')));
+						rt.BoneNames = i.Children.Select(_ => _.Values.First().Trim('"')).ToList();
 
 						break;
 					case "OffsetMatrices":
-						rt.OffsetMatrices.AddRange(i.Children.Select(_ => _.Values.Select(float.Parse).ToArray()));
+						rt.OffsetMatrices = i.Children.Select(_ => _.Values.Select(float.Parse).ToArray()).ToList();
 
 						break;
 					case "Materials":
-						rt.Materials.AddRange(i.Children.Where(_ => _.Name == "Material").Select(ElMaterial.Parse));
+						rt.Materials = i.Children.Where(_ => _.Name == "Material").Select(ElMaterial.Parse).ToList();
 
 						break;
 					case "Mesh":

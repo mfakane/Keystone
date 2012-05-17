@@ -39,10 +39,10 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 			set;
 		}
 
-		public List<MvdSection> Sections
+		public IList<MvdSection> Sections
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public MvdDocument()

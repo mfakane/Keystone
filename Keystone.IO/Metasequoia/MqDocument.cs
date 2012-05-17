@@ -45,25 +45,25 @@ namespace Linearstar.Keystone.IO.Metasequoia
 		/// <summary>
 		/// Material
 		/// </summary>
-		public List<MqMaterial> Materials
+		public IList<MqMaterial> Materials
 		{
 			get;
-			private set;
+			set;
 		}
 
 		/// <summary>
 		/// Object
 		/// </summary>
-		public List<MqObject> Objects
+		public IList<MqObject> Objects
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<MqChunk> CustomChunks
+		public IList<MqChunk> CustomChunks
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public MqDocument()
@@ -104,7 +104,7 @@ namespace Linearstar.Keystone.IO.Metasequoia
 
 							break;
 						case "material":
-							rt.Materials.AddRange(chunk.Children.Select(MqMaterial.Parse));
+							rt.Materials = chunk.Children.Select(MqMaterial.Parse).ToList();
 
 							break;
 						case "object":

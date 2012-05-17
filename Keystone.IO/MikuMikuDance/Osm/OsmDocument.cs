@@ -21,28 +21,28 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
-		public List<OsmBone> Bones
+		public IList<OsmBone> Bones
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<OsmIK> IK
+		public IList<OsmIK> IK
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<OsmWeight> Weights
+		public IList<OsmWeight> Weights
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<OsmMorph> Morphs
+		public IList<OsmMorph> Morphs
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public OsmDocument()
@@ -131,7 +131,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 			for (var i = sr.ReadLine(); i != null && i.TrimEnd() != "}"; i = sr.ReadLine())
 				if (!i.Contains("{"))
-					doc.Weights.AddRange(ReadBlock(i, sr).Select(_ => OsmWeight.Parse(_)));
+					doc.Weights = ReadBlock(i, sr).Select(_ => OsmWeight.Parse(_)).ToList();
 
 			sr.ReadLine();
 		}

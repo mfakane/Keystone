@@ -5,10 +5,10 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 {
 	public class MvdBoneData : MvdFixedItemSection
 	{
-		public List<MvdBoneFrame> Frames
+		public IList<MvdBoneFrame> Frames
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public int Key

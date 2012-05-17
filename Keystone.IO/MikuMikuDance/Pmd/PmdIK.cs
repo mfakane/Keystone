@@ -30,10 +30,10 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
-		public List<short> BindedBones
+		public IList<short> BindedBones
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public PmdIK()
@@ -52,7 +52,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 			rt.LoopCount = br.ReadUInt16();
 			rt.AngleLimitUnit = br.ReadSingle();
-			rt.BindedBones.AddRange(Enumerable.Range(0, bindedBones).Select(_ => br.ReadInt16()));
+			rt.BindedBones = Enumerable.Range(0, bindedBones).Select(_ => br.ReadInt16()).ToList();
 
 			return rt;
 		}

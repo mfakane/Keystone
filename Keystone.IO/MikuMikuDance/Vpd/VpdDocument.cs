@@ -21,10 +21,10 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
-		public List<VpdBone> Bones
+		public IList<VpdBone> Bones
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public VpdDocument()

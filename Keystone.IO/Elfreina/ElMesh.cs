@@ -14,46 +14,46 @@ namespace Linearstar.Keystone.IO.Elfreina
 			set;
 		}
 
-		public List<float[]> Positions
+		public IList<float[]> Positions
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<float[]> Normals
+		public IList<float[]> Normals
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<float[]> Diffuse
+		public IList<float[]> Diffuse
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<ElBlendPart> BlendList
+		public IList<ElBlendPart> BlendList
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public Dictionary<int, List<float[]>> TextureUV
+		public IDictionary<int, IList<float[]>> TextureUV
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<int[]> VertexIndices
+		public IList<int[]> VertexIndices
 		{
 			get;
-			private set;
+			set;
 		}
 
-		public List<int> Attributes
+		public IList<int> Attributes
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public ElMesh()
@@ -62,7 +62,7 @@ namespace Linearstar.Keystone.IO.Elfreina
 			this.Normals = new List<float[]>();
 			this.Diffuse = new List<float[]>();
 			this.BlendList = new List<ElBlendPart>();
-			this.TextureUV = new Dictionary<int, List<float[]>>();
+			this.TextureUV = new Dictionary<int, IList<float[]>>();
 			this.VertexIndices = new List<int[]>();
 			this.Attributes = new List<int>();
 		}
@@ -82,19 +82,19 @@ namespace Linearstar.Keystone.IO.Elfreina
 
 						break;
 					case "Positions":
-						rt.Positions.AddRange(i.Children.Select(_ => _.Values.Select(float.Parse).ToArray()));
+						rt.Positions = i.Children.Select(_ => _.Values.Select(float.Parse).ToArray()).ToList();
 
 						break;
 					case "Normals":
-						rt.Normals.AddRange(i.Children.Select(_ => _.Values.Select(float.Parse).ToArray()));
+						rt.Normals = i.Children.Select(_ => _.Values.Select(float.Parse).ToArray()).ToList();
 
 						break;
 					case "Diffuse":
-						rt.Diffuse.AddRange(i.Children.Select(_ => _.Values.Select(float.Parse).ToArray()));
+						rt.Diffuse = i.Children.Select(_ => _.Values.Select(float.Parse).ToArray()).ToList();
 
 						break;
 					case "BlendList":
-						rt.BlendList.AddRange(i.Children.Select(ElBlendPart.Parse));
+						rt.BlendList = i.Children.Select(ElBlendPart.Parse).ToList();
 
 						break;
 					case "TextureUV":
@@ -111,11 +111,11 @@ namespace Linearstar.Keystone.IO.Elfreina
 
 						break;
 					case "VertexIndices":
-						rt.VertexIndices.AddRange(i.Children.Select(_ => _.Values.Select(f => f.Split(',').Last()).Select(int.Parse).ToArray()));
+						rt.VertexIndices = i.Children.Select(_ => _.Values.Select(f => f.Split(',').Last()).Select(int.Parse).ToArray()).ToList();
 
 						break;
 					case "Attributes":
-						rt.Attributes.AddRange(i.Children.Select(_ => int.Parse(_.Values.First())));
+						rt.Attributes = i.Children.Select(_ => int.Parse(_.Values.First())).ToList();
 
 						break;
 				}
