@@ -7,6 +7,22 @@ namespace Linearstar.Keystone.IO
 {
 	static class Util
 	{
+		public static BinaryReader CreateSizedBufferReader(this BinaryReader br)
+		{
+			return new BinaryReader(new MemoryStream(br.ReadSizedBuffer()));
+		}
+
+		public static byte[] ReadSizedBuffer(this BinaryReader br)
+		{
+			return br.ReadBytes(br.ReadInt32());
+		}
+
+		public static void WriteSizedBuffer(this BinaryWriter bw, byte[] buffer)
+		{
+			bw.Write(buffer.Length);
+			bw.Write(buffer);
+		}
+
 		public static T ParseEnum<T>(string value)
 			where T : struct, IComparable, IFormattable, IConvertible
 		{
