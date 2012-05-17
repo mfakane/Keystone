@@ -16,7 +16,7 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 		public int[] IKBones
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public MvdModelPropertyData()
