@@ -42,6 +42,9 @@ MikuMikuDance
 * .osm
   One Skin Model file
   OsmDocument
+* .pmd
+  Polygon Model Data file
+  PmdDocument
 * .vmd
   Vocaloid Motion Data file
   VmdDocument
@@ -52,13 +55,14 @@ MikuMikuDance
   Vocaloid Accessory Connection file
   VacDocument
 
+
 MikuMikuMoving
 --------------
 
 名前空間: Linearstar.Keystone.IO.MikuMikuMoving
 
 * .mvd
-  MikuMikuMoving: Motion Vector Data file
+  Motion Vector Data file
   MvdDocument
 
 
@@ -67,3 +71,8 @@ MikuMikuMoving
 
 MqDocument や ElDocument の Parse メソッドにより既存のデータからインスタンスが得られます。Parse せずに新規で全部作ってもおそらく動きます。
 編集したインスタンスはテキストデータは GetFormattedText メソッド、バイナリデータは Write メソッドより出力できます。
+
+サンプルとしては以下のようなものがあります。
+
+* MMDVer3 以降の .vmd を MMDVer2 の .vmd に変換する
+  https://gist.github.com/2656910

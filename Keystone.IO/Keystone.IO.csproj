@@ -77,6 +77,21 @@
     <Compile Include="MikuMikuDance\Osm\OsmMorph.cs" />
     <Compile Include="MikuMikuDance\Osm\OsmMorphKind.cs" />
     <Compile Include="MikuMikuDance\Osm\OsmWeight.cs" />
+    <Compile Include="MikuMikuDance\Pmd\PmdBone.cs" />
+    <Compile Include="MikuMikuDance\Pmd\PmdBoneKind.cs" />
+    <Compile Include="MikuMikuDance\Pmd\PmdConstraint.cs" />
+    <Compile Include="MikuMikuDance\Pmd\PmdDocument.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MikuMikuDance\Pmd\PmdIK.cs" />
+    <Compile Include="MikuMikuDance\Pmd\PmdMaterial.cs" />
+    <Compile Include="MikuMikuDance\Pmd\PmdMorph.cs" />
+    <Compile Include="MikuMikuDance\Pmd\PmdMorphKind.cs" />
+    <Compile Include="MikuMikuDance\Pmd\PmdRigidBody.cs" />
+    <Compile Include="MikuMikuDance\Pmd\PmdRigidGroups.cs" />
+    <Compile Include="MikuMikuDance\Pmd\PmdRigidKind.cs" />
+    <Compile Include="MikuMikuDance\Pmd\PmdRigidShape.cs" />
+    <Compile Include="MikuMikuDance\Pmd\PmdVertex.cs" />
     <Compile Include="MikuMikuDance\Vac\VacDocument.cs" />
     <Compile Include="MikuMikuDance\Vmd\VmdCameraFrame.cs" />
     <Compile Include="MikuMikuDance\Vmd\VmdDocument.cs" />
@@ -127,6 +142,7 @@
     <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="MikuMikuDance\Pmd\PmdFormat.txt" />
     <Content Include="MikuMikuDance\Vmd\VmdFormat.txt" />
     <Content Include="MikuMikuMoving\MvdFormat.txt" />
     <Content Include="readme.txt" />

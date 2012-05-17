@@ -1,0 +1,221 @@
+﻿// .pmd format definition
+// bool: _Bool (true: value != 0, false: value == 0)
+// char: uint8_t
+// int: int32_t
+
+// char
+typedef enum
+{
+	BK_ROTATABLE,
+	BK_ROTATABLE_AND_MOVABLE,
+	BK_IK,
+	BK_UNKNOWN,
+	BK_IK_BOUND,
+	BK_ROTATION_AFFECTED,
+	BK_IK_TARGET,
+	BK_INVISIBILE,
+	BK_TWIST,
+	BK_ROTATION_ASSOCIATED,
+} BoneKind;
+
+// char
+typedef enum
+{
+	MK_BASE,
+	MK_EYEBROW,
+	MK_EYE,
+	MK_LIP,
+	MK_MISC,
+} MorphKind;
+
+// WORD, bit flags
+typedef enum
+{
+	RG_NONE,
+	RG_1,
+	RG_2,
+	RG_3 = 4,
+	RG_4 = 8,
+	RG_5 = 0x10,
+	RG_6 = 0x20,
+	RG_7 = 0x40,
+	RG_8 = 0x80,
+	RG_9 = 0x100,
+	RG_10 = 0x200,
+	RG_11 = 0x400,
+	RG_12 = 0x800,
+	RG_13 = 0x1000,
+	RG_14 = 0x2000,
+	RG_15 = 0x4000,
+	RG_16 = 0x8000,
+} RigidGroups;
+
+// char
+typedef enum
+{
+	RS_SPHERE,
+	RS_BOX,
+	RS_CAPSULE,
+} RigidShape;
+
+// char
+typedef enum
+{
+	RK_KINEMATIC,
+	RK_DYNAMIC,
+	RK_DYNAMIC_WITH_FIXED_POSITION,
+} RigidKind;
+
+struct Format
+{
+	char format[3];				// "Pmd" ASCII
+	float version;				// 00 00 80 3F == 1.0f
+	char modelName[20];			// Shift_JIS string, ends with 0x00, padded by 0xFD
+	char description[256];		// Shift_JIS string
+
+	int vertexCount;
+	Vertex vertices[vertexCount];
+
+	int faceVertexCount;
+	WORD faces[faceVertexCount];		// triangle list
+
+	int materialCount;
+	Material materials[materialCount];
+
+	WORD boneCount;
+	Bone bones[boneCount];
+
+	WORD ikCount;
+	IK iks[ikCount];
+
+	WORD morphCount;
+	Morph morphs[morphCount];
+
+	char visibleMorphCount;				// number
+	WORD visibleMorphs[visibleMorphCount];
+
+	char visibleBoneCategoryCount;		// number
+	char visibleBoneCatgories[50][visibleBoneCategoryCount];	// Shift_JIS string array
+
+	int visibleBoneCount;
+	BoneVisibility visibleBones[visibleBoneCount];
+
+	// extension part
+	bool englishCompatible;
+	char englishModelName[20];										// ASCII string
+	char englishDescription[256];									// ASCII string
+	char englishBoneNames[20][boneCount];							// ASCII string array
+	char englishMorphNames[20][morphCount - 1];						// ASCII string array, without "base" morph
+	char englishVisibleBoneCatgories[50][visibleBoneCategoryCount];	// ASCII string array
+	
+	char toonFileNames[100][10];									// ASCII string
+
+	int rigidCount;
+	RigidBody rigids[rigidCount];
+
+	int jointCount;
+	Joint joints[jointCount];
+}
+
+struct Vertex
+{
+	float position[3];
+	float normal[3];
+	float uv[2];
+	short boneIds[2];			// bone A, bone B
+	char boneWeight;			// number, weight to bone A, value between 0 and 100
+	bool noEdge;
+}
+
+struct Material
+{
+	float diffuse[4];			// r, g, b, a
+	float power;
+	float specular[3];
+	float ambient[3];
+	signed char toonIndex;		// none: -1, toon01.bmp: 0, toon10.bmp: 9
+	bool noEdge;
+	DWORD faceVertexCount;
+	char texture[20];			// Shift_JIS string
+}
+
+struct Bone
+{
+	char name[20];				// Shift_JIS string
+	short parentBone;			// none: -1
+	union
+	{
+		short connectedToBone;		// none: -1
+		short associatedBone;		// kind == BK_ROTATION_ASSOCIATED
+	}
+	BoneKind kind;
+	union
+	{
+		short ikParentBone;			// kind == BK_IK_BOUND
+		short associationRate;		// kind == BK_ROTATION_ASSOCIATED
+	}
+	float position[3];
+}
+
+struct IK
+{
+	short ikBone;
+	short targetBone;
+	char ikBindingBoneCount;		// number
+	WORD iterations;
+	float angleLimitUnit;
+	short ikBindingBones[ikBindingBoneCount];
+}
+
+struct Morph
+{
+	char name[20];				// Shift_JIS string
+	DWORD offsetCount;
+	MorphKind kind;
+	MorphOffset offsets[offsetCount];
+}
+
+struct MorphOffset
+{
+	DWORD vertex;
+	float offset[3];
+}
+
+struct BoneVisibility
+{
+	short bone;
+	char visibleBoneCategory;	// number
+}
+
+struct RigidBody
+{
+	char name[20];					// Shift_JIS string
+	short relatedBone;
+	char group;						// number, 0: Group 1, 1: Group 2...
+	RigidGroups collidableGroups;
+	RigidShape shape;
+	float size[3];					// width, height, depth
+	float position[3];
+	float rotation[3];
+	float mass;
+	float linearDamping;
+	float angularDamping;
+	float restitution;
+	float friction;
+	RigidKind kind;
+}
+
+struct Joint
+{
+	char name[20];					// Shift_JIS string
+	DWORD rigidA;
+	DWORD rigidB;
+	float position[3];
+	float rotation[3];
+	float linearLowerLimit[3];
+	float linearUpperLimit[3];
+	float angularLowerLimit[3];
+	float angularUpperLimit[3];
+	float linearSpringStiffness[3];
+	float angularSpringStiffness[3];
+}
