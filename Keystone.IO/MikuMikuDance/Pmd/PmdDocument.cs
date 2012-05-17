@@ -228,13 +228,17 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 							rt.EnglishVisibleBoneCategories.Add(ReadPmdString(br, 50));
 					}
 
-					rt.ToonFileNames = Enumerable.Range(0, 10).Select(_ => ReadPmdString(br, 100)).ToList();
+					if (br.GetRemainingLength() > 0)
+						rt.ToonFileNames = Enumerable.Range(0, 10).Select(_ => ReadPmdString(br, 100)).ToList();
 
-					for (var i = br.ReadInt32() - 1; i >= 0; i--)
-						rt.Rigids.Add(PmdRigidBody.Parse(br));
+					if (br.GetRemainingLength() > 0)
+					{
+						for (var i = br.ReadInt32() - 1; i >= 0; i--)
+							rt.Rigids.Add(PmdRigidBody.Parse(br));
 
-					for (var i = br.ReadInt32() - 1; i >= 0; i--)
-						rt.Constraints.Add(PmdConstraint.Parse(br));
+						for (var i = br.ReadInt32() - 1; i >= 0; i--)
+							rt.Constraints.Add(PmdConstraint.Parse(br));
+					}
 				}
 			}
 
