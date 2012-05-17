@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -18,7 +19,18 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
-		public Dictionary<ushort, float[]> Offsets
+		/// <summary>
+		/// 移動させる頂点のインデックス一覧を取得します。
+		/// これは Kind == None の場合、モデルの頂点インデックスです。
+		/// それ以外の場合、Kind == None の Indices におけるインデックスです。
+		/// </summary>
+		public List<ushort> Indices
+		{
+			get;
+			private set;
+		}
+
+		public List<float[]> Offsets
 		{
 			get;
 			private set;
@@ -26,24 +38,31 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public OsmMorph()
 		{
-			this.Offsets = new Dictionary<ushort, float[]>();
+			this.Indices = new List<ushort>();
+			this.Offsets = new List<float[]>();
 		}
 
 		public static OsmMorph Parse(IEnumerable<string> block)
 		{
 			var sl = block.Select(_ => _.Trim().Split(new[] { ';' }, 2).First()).ToArray();
 			var cc = sl[1].Split(',');
+			var ol = sl.Skip(2).Select(_ => _.Split(':', ',')).Select(_ => new
+			{
+				Index = ushort.Parse(_[0]),
+				Offset = new[]
+				{
+					float.Parse(_[1]),
+					float.Parse(_[2]),
+					float.Parse(_[3]),
+				}
+			}).ToArray();
 
 			return new OsmMorph
 			{
 				Name = sl[0].Split(new[] { '{' }, 2).Last(),
 				Kind = (OsmMorphKind)int.Parse(cc[1]),
-				Offsets = sl.Skip(2).Select(_ => _.Split(':', ',')).ToDictionary(_ => ushort.Parse(_[0]), _ => new[]
-				{
-					float.Parse(_[1]),
-					float.Parse(_[2]),
-					float.Parse(_[3]),
-				}),
+				Indices = ol.Select(_ => _.Index).ToList(),
+				Offsets = ol.Select(_ => _.Offset).ToList(),
 			};
 		}
 
@@ -62,7 +81,8 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			sl.Append((int)this.Kind);
 			sl.AppendLine(";");
 
-			this.Offsets.ForEach(_ => sl.AppendFormat("  {0}:{1:0.000000},{2:0.000000},{3:0.000000};\r\n", _.Key, _.Value[0], _.Value[1], _.Value[2]));
+			this.Indices.Zip(this.Offsets, Tuple.Create)
+						.ForEach(_ => sl.AppendFormat("  {0}:{1:0.000000},{2:0.000000},{3:0.000000};\r\n", _.Item1, _.Item2[0], _.Item2[1], _.Item2[2]));
 
 			sl.Append(" }");
 
