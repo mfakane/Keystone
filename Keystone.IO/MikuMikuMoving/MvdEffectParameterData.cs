@@ -8,37 +8,37 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 		public bool? Boolean
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public int? Integer
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public float? Single
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public float? Single2
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public float? Single3
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public float? Single4
 		{
 			get;
-			private set;
+			set;
 		}
 
 		public MvdEffectParameterData(bool value)
@@ -133,20 +133,15 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 		{
 			if (this.Boolean.HasValue)
 				bw.Write(this.Boolean.Value);
-
-			if (this.Integer.HasValue)
+			else if (this.Integer.HasValue)
 				bw.Write(this.Integer.Value);
-
-			if (this.Single.HasValue)
+			else if (this.Single.HasValue)
 				bw.Write(this.Single.Value);
-
-			if (this.Single2.HasValue)
+			else if (this.Single2.HasValue)
 				bw.Write(this.Single2.Value);
-
-			if (this.Single3.HasValue)
+			else if (this.Single3.HasValue)
 				bw.Write(this.Single3.Value);
-
-			if (this.Single4.HasValue)
+			else if (this.Single4.HasValue)
 				bw.Write(this.Single4.Value);
 		}
 	}
