@@ -89,5 +89,19 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 			this.ZInterpolation.ForEach(_ => _.Write(bw));
 			this.RotationInterpolation.ForEach(_ => _.Write(bw));
 		}
+
+		public string GetName(MvdNameList names, MvdBoneData boneData)
+		{
+			if (this.StageId == 0)
+				return names.Names[boneData.Key];
+			else
+			{
+				var key = boneData.Key * -1000 - this.StageId;
+
+				return names.Names.ContainsKey(key)
+					? names.Names[key]
+					: this.StageId.ToString("000");
+			}
+		}
 	}
 }
