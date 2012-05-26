@@ -45,6 +45,9 @@ MikuMikuDance
 * .pmd
   Polygon Model Data file
   PmdDocument
+* .pmx
+  拡張モデルファイル
+  PmxDocument
 * .vmd
   Vocaloid Motion Data file
   VmdDocument
