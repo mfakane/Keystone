@@ -10,13 +10,13 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
-		public uint RigidA
+		public int RigidA
 		{
 			get;
 			set;
 		}
 
-		public uint RigidB
+		public int RigidB
 		{
 			get;
 			set;
@@ -87,8 +87,8 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			return new PmdConstraint
 			{
 				Name = PmdDocument.ReadPmdString(br, 20),
-				RigidA = br.ReadUInt32(),
-				RigidB = br.ReadUInt32(),
+				RigidA = br.ReadInt32(),
+				RigidB = br.ReadInt32(),
 				Position = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() },
 				Rotation = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() },
 				LinearLowerLimit = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() },
