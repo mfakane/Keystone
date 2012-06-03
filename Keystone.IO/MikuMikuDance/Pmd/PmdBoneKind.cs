@@ -3,7 +3,7 @@
 	public enum PmdBoneKind : byte
 	{
 		Rotatable,
-		RotateAndMoveable,
+		RotateAndMovable,
 		IK,
 		IKBound = 4,
 		RotationAffected,
