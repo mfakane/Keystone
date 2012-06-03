@@ -42,6 +42,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public PmdBone()
 		{
+			this.ParentBone = this.ConnectedToOrAssociatedBone = -1;
 			this.Position = new[] { 0f, 0, 0 };
 		}
 

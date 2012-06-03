@@ -127,7 +127,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 		public PmxBone()
 		{
 			this.Position = new[] { 0f, 0, 0 };
-			this.ConnectToBone = -1;
+			this.ParentBone = this.ConnectToBone = -1;
 			this.ConnectToOffset = new[] { 0f, 0, 0 };
 			this.FixedAxis = new[] { 0f, 0, 0 };
 			this.LocalVectorX = new[] { 0f, 0, 0 };
