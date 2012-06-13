@@ -27,9 +27,16 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
+		public IList<VpdMorph> Morphs
+		{
+			get;
+			set;
+		}
+
 		public VpdDocument()
 		{
 			this.Bones = new List<VpdBone>();
+			this.Morphs = new List<VpdMorph>();
 		}
 
 		public static VpdDocument Parse(string text)
@@ -48,11 +55,17 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 				sr.ReadLine();
 
 				for (var i = sr.ReadLine(); i != null; i = sr.ReadLine())
-					if (i.StartsWith("Bone") && i.Contains("{"))
-						rt.Bones.Add(VpdBone.Parse(new[] { i }
-							.Concat(Util.Repeat(sr)
-										.Select(_ => _.ReadLine())
-										.TakeWhile(_ => _.Trim() != "}"))));
+					if (i.Contains("{"))
+						if (i.StartsWith("Bone"))
+							rt.Bones.Add(VpdBone.Parse(new[] { i }
+								.Concat(Util.Repeat(sr)
+											.Select(_ => _.ReadLine())
+											.TakeWhile(_ => _.Trim() != "}"))));
+						else if (i.StartsWith("Morph"))
+							rt.Morphs.Add(VpdMorph.Parse(new[] { i }
+								.Concat(Util.Repeat(sr)
+											.Select(_ => _.ReadLine())
+											.TakeWhile(_ => _.Trim() != "}"))));
 			}
 
 			return rt;
@@ -68,11 +81,18 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			sb.AppendFormat("{0};\t\t\t\t// 総ポーズボーン数\r\n", this.Bones.Count);
 			sb.AppendLine();
 
-			var idx = 0;
+			var bones = this.Bones.ToArray();
+			var morphs = this.Morphs.ToArray();
 
-			foreach (var i in this.Bones)
+			for (int i = 0; i < bones.Length; i++)
 			{
-				sb.AppendLine(i.GetFormattedText(idx++));
+				sb.AppendLine(bones[i].GetFormattedText(i));
+				sb.AppendLine();
+			}
+
+			for (int i = 0; i < morphs.Length; i++)
+			{
+				sb.AppendLine(morphs[i].GetFormattedText(i));
 				sb.AppendLine();
 			}
 

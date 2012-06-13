@@ -132,6 +132,7 @@
     <Compile Include="MikuMikuDance\Vmd\VmdVersion.cs" />
     <Compile Include="MikuMikuDance\Vpd\VpdBone.cs" />
     <Compile Include="MikuMikuDance\Vpd\VpdDocument.cs" />
+    <Compile Include="MikuMikuDance\Vpd\VpdMorph.cs" />
     <Compile Include="MikuMikuDance\Xx\XxDocument.cs" />
     <Compile Include="MikuMikuDance\Xx\XxMaterial.cs" />
     <Compile Include="MikuMikuDance\Xx\XxVertex.cs" />
