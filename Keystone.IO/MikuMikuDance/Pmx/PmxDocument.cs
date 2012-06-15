@@ -144,7 +144,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 				bw.Write(this.Vertices.Count);
 				this.Vertices.ForEach(_ => _.Write(bw, this));
 				bw.Write(this.Indices.Count);
-				this.Indices.ForEach(_ => this.WriteIndex(bw, PmxIndexKind.Bone, _));
+				this.Indices.ForEach(_ => this.WriteIndex(bw, PmxIndexKind.Vertex, _));
 				bw.Write(this.Textures.Count);
 				this.Textures.ForEach(_ => this.WriteString(bw, _));
 				bw.Write(this.Materials.Count);
