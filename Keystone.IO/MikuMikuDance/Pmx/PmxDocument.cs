@@ -12,7 +12,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 	public class PmxDocument
 	{
 		public const string DisplayName = "Polygon Model Data Extended file";
-		public const string Filter = "*.pmd";
+		public const string Filter = "*.pmx";
 		
 		public float Version
 		{
