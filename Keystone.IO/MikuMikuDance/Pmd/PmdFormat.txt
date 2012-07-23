@@ -95,7 +95,7 @@ struct Format
 	WORD visibleMorphs[visibleMorphCount];
 
 	char visibleBoneCategoryCount;		// number
-	char visibleBoneCatgories[50][visibleBoneCategoryCount];	// Shift_JIS string array
+	char visibleBoneCatgories[visibleBoneCategoryCount][50];	// Shift_JIS string array
 
 	int visibleBoneCount;
 	BoneVisibility visibleBones[visibleBoneCount];
@@ -106,12 +106,12 @@ struct Format
 	// if (englishCompatible) {
 	char englishModelName[20];										// ASCII string
 	char englishDescription[256];									// ASCII string
-	char englishBoneNames[20][boneCount];							// ASCII string array
-	char englishMorphNames[20][morphCount - 1];						// ASCII string array, without "base" morph
-	char englishVisibleBoneCatgories[50][visibleBoneCategoryCount];	// ASCII string array
+	char englishBoneNames[boneCount][20];							// ASCII string array
+	char englishMorphNames[morphCount - 1][20];						// ASCII string array, without "base" morph
+	char englishVisibleBoneCatgories[visibleBoneCategoryCount][50];	// ASCII string array
 	// }
 
-	char toonFileNames[100][10];									// ASCII string
+	char toonFileNames[10][100];									// ASCII string
 
 	int rigidCount;
 	RigidBody rigids[rigidCount];
