@@ -92,6 +92,7 @@
     <Compile Include="MikuMikuDance\Pmd\PmdRigidKind.cs" />
     <Compile Include="MikuMikuDance\Pmd\PmdRigidShape.cs" />
     <Compile Include="MikuMikuDance\Pmd\PmdVertex.cs" />
+    <Compile Include="MikuMikuDance\Pmx\PmxConfigurationIndex.cs" />
     <Compile Include="MikuMikuDance\Pmx\PmxConstraint.cs" />
     <Compile Include="MikuMikuDance\Pmx\PmxConstraintKind.cs" />
     <Compile Include="MikuMikuDance\Pmx\PmxDisplayItem.cs" />
@@ -113,6 +114,11 @@
     <Compile Include="MikuMikuDance\Pmx\PmxMorphKind.cs" />
     <Compile Include="MikuMikuDance\Pmx\PmxMorphOffset.cs" />
     <Compile Include="MikuMikuDance\Pmx\PmxRigidBody.cs" />
+    <Compile Include="MikuMikuDance\Pmx\PmxSoftBody.cs" />
+    <Compile Include="MikuMikuDance\Pmx\PmxSoftBodyAeroModel.cs" />
+    <Compile Include="MikuMikuDance\Pmx\PmxSoftBodyAnchor.cs" />
+    <Compile Include="MikuMikuDance\Pmx\PmxSoftBodyKind.cs" />
+    <Compile Include="MikuMikuDance\Pmx\PmxSoftBodyOptions.cs" />
     <Compile Include="MikuMikuDance\Pmx\PmxTextureMode.cs" />
     <Compile Include="MikuMikuDance\Pmx\PmxVertexIndexSize.cs" />
     <Compile Include="MikuMikuDance\Pmx\PmxHeader.cs" />

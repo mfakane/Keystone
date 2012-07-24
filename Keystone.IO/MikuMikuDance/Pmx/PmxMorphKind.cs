@@ -11,5 +11,13 @@
 		AdditionalUV3,
 		AdditionalUV4,
 		Material,
+		/// <summary>
+		/// (PMX 2.1)
+		/// </summary>
+		Flip,
+		/// <summary>
+		/// (PMX 2.1)
+		/// </summary>
+		Impulse,
 	}
 }

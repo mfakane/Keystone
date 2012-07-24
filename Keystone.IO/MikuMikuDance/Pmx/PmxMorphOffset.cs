@@ -48,7 +48,15 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 					break;
 				case PmxMorphKind.Material:
 					rt = new PmxMaterialMorphOffset();
-				
+
+					break;
+				case PmxMorphKind.Flip:
+					rt = new PmxFlipMorphOffset();
+
+					break;
+				case PmxMorphKind.Impulse:
+					rt = new PmxImpulseMorphOffset();
+
 					break;
 				default:
 					throw new ArgumentException();
@@ -331,6 +339,71 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 		{
 			doc.WriteIndex(bw, PmxIndexKind.Morph, this.Morph);
 			bw.Write(this.Weight);
+		}
+	}
+
+	/// <summary>
+	/// (PMX 2.1)
+	/// </summary>
+	public class PmxFlipMorphOffset : PmxGroupMorphOffset
+	{
+	}
+
+	/// <summary>
+	/// (PMX 2.1)
+	/// </summary>
+	public class PmxImpulseMorphOffset : PmxMorphOffset
+	{
+		public int Rigid
+		{
+			get;
+			set;
+		}
+
+		public bool IsLocal
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
+		/// Vector3
+		/// </summary>
+		public float[] CentralImpulse
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
+		/// Vector3
+		/// </summary>
+		public float[] TorqueImpulse
+		{
+			get;
+			set;
+		}
+
+		public PmxImpulseMorphOffset()
+		{
+			this.CentralImpulse = new[] { 0f, 0, 0 };
+			this.TorqueImpulse = new[] { 0f, 0, 0 };
+		}
+
+		public override void Read(BinaryReader br, PmxDocument doc)
+		{
+			this.Rigid = doc.ReadIndex(br, PmxIndexKind.Rigid);
+			this.IsLocal = br.ReadBoolean();
+			this.CentralImpulse = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
+			this.TorqueImpulse = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
+		}
+
+		public override void Write(BinaryWriter bw, PmxDocument doc)
+		{
+			doc.WriteIndex(bw, PmxIndexKind.Rigid, this.Rigid);
+			bw.Write(this.IsLocal);
+			this.CentralImpulse.ForEach(bw.Write);
+			this.TorqueImpulse.ForEach(bw.Write);
 		}
 	}
 }

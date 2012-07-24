@@ -27,6 +27,10 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 					rt = new PmxSphericalDeforming();
 
 					break;
+				case PmxSkinningKind.DualQuaternionDeforming:
+					rt = new PmxDualQuaternionDeforming();
+
+					break;
 				default:
 					throw new NotSupportedException();
 			}
@@ -196,4 +200,10 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 		}
 	}
 
+	/// <summary>
+	/// (PMX 2.1)
+	/// </summary>
+	public class PmxDualQuaternionDeforming : PmxLinearBlendDeforming4
+	{
+	}
 }

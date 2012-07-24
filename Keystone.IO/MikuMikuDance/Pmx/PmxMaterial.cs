@@ -59,6 +59,9 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
+		/// <summary>
+		/// this.Options.HasFlag(PmxMaterialOptions.DrawPoint) ? point size : edge size
+		/// </summary>
 		public float EdgeSize
 		{
 			get;

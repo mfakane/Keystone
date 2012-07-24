@@ -78,6 +78,10 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public void Write(BinaryWriter bw, PmxDocument doc)
 		{
+			if (doc.Version < 2.1f &&
+				this.SkinningKind == PmxSkinningKind.DualQuaternionDeforming)
+				this.SkinningKind = PmxSkinningKind.LinearBlendDeforming4;
+
 			this.Position.ForEach(bw.Write);
 			this.Normal.ForEach(bw.Write);
 			this.UV.ForEach(bw.Write);

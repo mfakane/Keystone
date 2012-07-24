@@ -58,6 +58,12 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public void Write(BinaryWriter bw, PmxDocument doc)
 		{
+			if (doc.Version < 2.1f)
+				if (this.Kind == PmxMorphKind.Flip)
+					this.Kind = PmxMorphKind.Group;
+				else if (this.Kind == PmxMorphKind.Impulse)
+					return;
+
 			doc.WriteString(bw, this.Name);
 			doc.WriteString(bw, this.EnglishName);
 			bw.Write((byte)this.Category);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Linearstar.Keystone.IO.MikuMikuDance.Pmx;
 
 namespace Linearstar.Keystone.IO.MikuMikuDance
 {
@@ -13,13 +14,13 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 	{
 		public const string DisplayName = "Polygon Model Data Extended file";
 		public const string Filter = "*.pmx";
-		
+
 		public float Version
 		{
 			get;
 			set;
 		}
-		
+
 		public PmxHeader Header
 		{
 			get;
@@ -86,6 +87,15 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
+		/// <summary>
+		/// (PMX 2.1)
+		/// </summary>
+		public List<PmxSoftBody> SoftBodies
+		{
+			get;
+			set;
+		}
+
 		public PmxDocument()
 		{
 			this.Version = 2;
@@ -99,6 +109,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			this.Morphs = new List<PmxMorph>();
 			this.Rigids = new List<PmxRigidBody>();
 			this.Constraints = new List<PmxConstraint>();
+			this.SoftBodies = new List<PmxSoftBody>();
 		}
 
 		public static PmxDocument Parse(Stream stream)
@@ -113,7 +124,8 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 				rt.Version = br.ReadSingle();
 
-				if (rt.Version != 2)
+				if (rt.Version != 2 &&
+					rt.Version != 2.1f)
 					throw new NotSupportedException("specified format version not supported");
 
 				rt.Header = PmxHeader.Parse(br);
@@ -127,6 +139,9 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 				rt.DisplayList = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxDisplayList.Parse(br, rt)).ToList();
 				rt.Rigids = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxRigidBody.Parse(br, rt)).ToList();
 				rt.Constraints = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxConstraint.Parse(br, rt)).ToList();
+
+				if (rt.Version > 2)
+					rt.SoftBodies = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxSoftBody.Parse(br, rt)).ToList();
 
 				return rt;
 			}
@@ -159,6 +174,12 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 				this.Rigids.ForEach(_ => _.Write(bw, this));
 				bw.Write(this.Constraints.Count);
 				this.Constraints.ForEach(_ => _.Write(bw, this));
+
+				if (this.Version > 2)
+				{
+					bw.Write(this.SoftBodies.Count);
+					this.SoftBodies.ForEach(_ => _.Write(bw, this));
+				}
 			}
 		}
 
