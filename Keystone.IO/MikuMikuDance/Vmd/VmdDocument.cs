@@ -70,28 +70,26 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 		public static VmdDocument Parse(Stream stream)
 		{
 			var rt = new VmdDocument();
+			// leave open
+			var br = new BinaryReader(stream);
+			var header = ReadVmdString(br, 30);
 
-			using (var br = new BinaryReader(stream))
-			{
-				var header = ReadVmdString(br, 30);
+			if (header == "Vocaloid Motion Data file")
+				rt.Version = VmdVersion.MMDVer2;
+			else if (header == "Vocaloid Motion Data 0002")
+				rt.Version = VmdVersion.MMDVer3;
+			else
+				throw new InvalidOperationException("invalid format");
 
-				if (header == "Vocaloid Motion Data file")
-					rt.Version = VmdVersion.MMDVer2;
-				else if (header == "Vocaloid Motion Data 0002")
-					rt.Version = VmdVersion.MMDVer3;
-				else
-					throw new InvalidOperationException("invalid format");
+			rt.ModelName = ReadVmdString(br, rt.Version == VmdVersion.MMDVer2 ? 10 : 20);
 
-				rt.ModelName = ReadVmdString(br, rt.Version == VmdVersion.MMDVer2 ? 10 : 20);
+			rt.BoneFrames = ReadBoneFrames(br).ToList();
+			rt.MorphFrames = ReadMorphFrames(br).ToList();
+			rt.CameraFrames = ReadCameraFrames(br, rt.Version).ToList();
+			rt.LightFrames = ReadLightFrames(br).ToList();
 
-				rt.BoneFrames = ReadBoneFrames(br).ToList();
-				rt.MorphFrames= ReadMorphFrames(br).ToList();
-				rt.CameraFrames= ReadCameraFrames(br, rt.Version).ToList();
-				rt.LightFrames = ReadLightFrames(br).ToList();
-
-				if (br.GetRemainingLength() > 4)
-					rt.SelfShadowFrames = ReadSelfShadowFrames(br).ToList();
-			}
+			if (br.GetRemainingLength() > 4)
+				rt.SelfShadowFrames = ReadSelfShadowFrames(br).ToList();
 
 			return rt;
 		}
@@ -151,36 +149,36 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public void Write(Stream stream)
 		{
-			using (var bw = new BinaryWriter(stream))
+			// leave open
+			var bw = new BinaryWriter(stream);
+
+			if (this.Version == VmdVersion.MMDVer2)
 			{
-				if (this.Version == VmdVersion.MMDVer2)
-				{
-					WriteVmdString(bw, "Vocaloid Motion Data file", 30, VmdVersion.MMDVer2);
-					WriteVmdString(bw, this.ModelName, 10, this.Version);
-				}
-				else
-				{
-					WriteVmdString(bw, "Vocaloid Motion Data 0002", 30, VmdVersion.MMDVer2);
-					WriteVmdString(bw, this.ModelName, 20, this.Version);
-				}
-
-				bw.Write(this.BoneFrames.Count);
-				this.BoneFrames.ForEach(_ => _.Write(bw, this.Version));
-				bw.Write(this.MorphFrames.Count);
-				this.MorphFrames.ForEach(_ => _.Write(bw, this.Version));
-				bw.Write(this.CameraFrames.Count);
-				this.CameraFrames.ForEach(_ => _.Write(bw, this.Version));
-				bw.Write(this.LightFrames.Count);
-				this.LightFrames.ForEach(_ => _.Write(bw));
-
-				if (this.Version == VmdVersion.MMDVer3)
-				{
-					bw.Write(this.SelfShadowFrames.Count);
-					this.SelfShadowFrames.ForEach(_ => _.Write(bw));
-				}
-
-				bw.Write(0);
+				WriteVmdString(bw, "Vocaloid Motion Data file", 30, VmdVersion.MMDVer2);
+				WriteVmdString(bw, this.ModelName, 10, this.Version);
 			}
+			else
+			{
+				WriteVmdString(bw, "Vocaloid Motion Data 0002", 30, VmdVersion.MMDVer2);
+				WriteVmdString(bw, this.ModelName, 20, this.Version);
+			}
+
+			bw.Write(this.BoneFrames.Count);
+			this.BoneFrames.ForEach(_ => _.Write(bw, this.Version));
+			bw.Write(this.MorphFrames.Count);
+			this.MorphFrames.ForEach(_ => _.Write(bw, this.Version));
+			bw.Write(this.CameraFrames.Count);
+			this.CameraFrames.ForEach(_ => _.Write(bw, this.Version));
+			bw.Write(this.LightFrames.Count);
+			this.LightFrames.ForEach(_ => _.Write(bw));
+
+			if (this.Version == VmdVersion.MMDVer3)
+			{
+				bw.Write(this.SelfShadowFrames.Count);
+				this.SelfShadowFrames.ForEach(_ => _.Write(bw));
+			}
+
+			bw.Write(0);
 		}
 	}
 }

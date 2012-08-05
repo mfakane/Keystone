@@ -44,23 +44,22 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 		{
 			var rt = new XxDocument();
 
-			using (var br = new BinaryReader(stream))
-			{
-				var vertices = br.ReadUInt32();
+			// leave open
+			var br = new BinaryReader(stream);
+			var vertices = br.ReadUInt32();
 
-				for (uint i = 0; i < vertices; i++)
-					rt.Vertices.Add(XxVertex.Parse(br));
+			for (uint i = 0; i < vertices; i++)
+				rt.Vertices.Add(XxVertex.Parse(br));
 
-				var lines = br.ReadUInt32();
+			var lines = br.ReadUInt32();
 
-				for (uint i = 0; i < lines; i++)
-					rt.Lines.Add(XxLine.Parse(br));
+			for (uint i = 0; i < lines; i++)
+				rt.Lines.Add(XxLine.Parse(br));
 
-				var materials = br.ReadUInt32();
+			var materials = br.ReadUInt32();
 
-				for (uint i = 0; i < materials; i++)
-					rt.Materials.Add(XxMaterial.Parse(br));
-			}
+			for (uint i = 0; i < materials; i++)
+				rt.Materials.Add(XxMaterial.Parse(br));
 
 			return rt;
 		}
@@ -80,15 +79,15 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public void Write(Stream stream)
 		{
-			using (var bw = new BinaryWriter(stream))
-			{
-				bw.Write((uint)this.Vertices.Count);
-				this.Vertices.ForEach(_ => _.Write(bw));
-				bw.Write((uint)this.Lines.Count);
-				this.Lines.ForEach(_ => _.Write(bw));
-				bw.Write((uint)this.Materials.Count);
-				this.Materials.ForEach(_ => _.Write(bw));
-			}
+			// leave open
+			var bw = new BinaryWriter(stream);
+
+			bw.Write((uint)this.Vertices.Count);
+			this.Vertices.ForEach(_ => _.Write(bw));
+			bw.Write((uint)this.Lines.Count);
+			this.Lines.ForEach(_ => _.Write(bw));
+			bw.Write((uint)this.Materials.Count);
+			this.Materials.ForEach(_ => _.Write(bw));
 		}
 	}
 }

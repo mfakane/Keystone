@@ -58,8 +58,8 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 				"Bone{0}{{{1}\r\n  {2};\t\t\t\t// trans x,y,z\r\n  {3};\t\t// Quaternion x,y,z,w\r\n}}",
 				index,
 				this.BoneName,
-				string.Join(",", this.Position.Select(_ => _.ToString("0.000000"))),
-				string.Join(",", this.Quaternion.Select(_ => _.ToString("0.000000")))
+				string.Join(",", this.Position.Select(_ => _.ToString("0.000000")).ToArray()),
+				string.Join(",", this.Quaternion.Select(_ => _.ToString("0.000000")).ToArray())
 			);
 		}
 	}

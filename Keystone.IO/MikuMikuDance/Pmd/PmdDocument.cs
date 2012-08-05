@@ -161,84 +161,83 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 		{
 			var rt = new PmdDocument();
 
-			using (var br = new BinaryReader(stream))
+			// leave open
+			var br = new BinaryReader(stream);
+			var header = ReadPmdString(br, 3);
+
+			if (header != "Pmd")
+				throw new InvalidOperationException("invalid format");
+
+			rt.Version = br.ReadSingle();
+
+			if (rt.Version >= 2)
+				throw new NotSupportedException("specified format version not supported");
+
+			rt.ModelName = ReadPmdString(br, 20);
+			rt.Description = ReadPmdString(br, 256);
+
+			for (var i = br.ReadInt32() - 1; i >= 0; i--)
+				rt.Vertices.Add(PmdVertex.Parse(br));
+
+			for (var i = br.ReadInt32() - 1; i >= 0; i--)
+				rt.Indices.Add(br.ReadUInt16());
+
+			for (var i = br.ReadInt32() - 1; i >= 0; i--)
+				rt.Materials.Add(PmdMaterial.Parse(br));
+
+			var bones = br.ReadUInt16();
+
+			for (ushort i = 0; i < bones; i++)
+				rt.Bones.Add(PmdBone.Parse(br));
+
+			for (var i = br.ReadUInt16() - 1; i >= 0; i--)
+				rt.IK.Add(PmdIK.Parse(br));
+
+			var morphs = br.ReadUInt16();
+
+			for (ushort i = 0; i < morphs; i++)
+				rt.Morphs.Add(PmdMorph.Parse(br));
+
+			for (var i = br.ReadByte() - 1; i >= 0; i--)
+				rt.VisibleMorphs.Add(br.ReadUInt16());
+
+			var visibleBoneCategories = br.ReadByte();
+
+			for (byte i = 0; i < visibleBoneCategories; i++)
+				rt.VisibleBoneCategories.Add(ReadPmdString(br, 50));
+
+			for (var i = br.ReadInt32() - 1; i >= 0; i--)
+				rt.VisibleBones.Add(br.ReadInt16(), br.ReadByte());
+
+			if (br.GetRemainingLength() > 0)
 			{
-				var header = ReadPmdString(br, 3);
+				rt.EnglishCompatible = br.ReadBoolean();
 
-				if (header != "Pmd")
-					throw new InvalidOperationException("invalid format");
+				if (rt.EnglishCompatible)
+				{
+					rt.EnglishModelName = ReadPmdString(br, 20);
+					rt.EnglishDescription = ReadPmdString(br, 256);
 
-				rt.Version = br.ReadSingle();
+					for (ushort i = 0; i < bones; i++)
+						rt.EnglishBoneNames.Add(ReadPmdString(br, 20));
 
-				if (rt.Version >= 2)
-					throw new NotSupportedException("specified format version not supported");
+					for (ushort i = 0; i < morphs - 1; i++)
+						rt.EnglishMorphNames.Add(ReadPmdString(br, 20));
 
-				rt.ModelName = ReadPmdString(br, 20);
-				rt.Description = ReadPmdString(br, 256);
+					for (byte i = 0; i < visibleBoneCategories; i++)
+						rt.EnglishVisibleBoneCategories.Add(ReadPmdString(br, 50));
+				}
 
-				for (var i = br.ReadInt32() - 1; i >= 0; i--)
-					rt.Vertices.Add(PmdVertex.Parse(br));
-
-				for (var i = br.ReadInt32() - 1; i >= 0; i--)
-					rt.Indices.Add(br.ReadUInt16());
-
-				for (var i = br.ReadInt32() - 1; i >= 0; i--)
-					rt.Materials.Add(PmdMaterial.Parse(br));
-
-				var bones = br.ReadUInt16();
-
-				for (ushort i = 0; i < bones; i++)
-					rt.Bones.Add(PmdBone.Parse(br));
-
-				for (var i = br.ReadUInt16() - 1; i >= 0; i--)
-					rt.IK.Add(PmdIK.Parse(br));
-
-				var morphs = br.ReadUInt16();
-
-				for (ushort i = 0; i < morphs; i++)
-					rt.Morphs.Add(PmdMorph.Parse(br));
-
-				for (var i = br.ReadByte() - 1; i >= 0; i--)
-					rt.VisibleMorphs.Add(br.ReadUInt16());
-
-				var visibleBoneCategories = br.ReadByte();
-
-				for (byte i = 0; i < visibleBoneCategories; i++)
-					rt.VisibleBoneCategories.Add(ReadPmdString(br, 50));
-
-				for (var i = br.ReadInt32() - 1; i >= 0; i--)
-					rt.VisibleBones.Add(br.ReadInt16(), br.ReadByte());
+				if (br.GetRemainingLength() > 0)
+					rt.ToonFileNames = Enumerable.Range(0, 10).Select(_ => ReadPmdString(br, 100)).ToList();
 
 				if (br.GetRemainingLength() > 0)
 				{
-					rt.EnglishCompatible = br.ReadBoolean();
+					for (var i = br.ReadInt32() - 1; i >= 0; i--)
+						rt.Rigids.Add(PmdRigidBody.Parse(br));
 
-					if (rt.EnglishCompatible)
-					{
-						rt.EnglishModelName = ReadPmdString(br, 20);
-						rt.EnglishDescription = ReadPmdString(br, 256);
-
-						for (ushort i = 0; i < bones; i++)
-							rt.EnglishBoneNames.Add(ReadPmdString(br, 20));
-
-						for (ushort i = 0; i < morphs - 1; i++)
-							rt.EnglishMorphNames.Add(ReadPmdString(br, 20));
-
-						for (byte i = 0; i < visibleBoneCategories; i++)
-							rt.EnglishVisibleBoneCategories.Add(ReadPmdString(br, 50));
-					}
-
-					if (br.GetRemainingLength() > 0)
-						rt.ToonFileNames = Enumerable.Range(0, 10).Select(_ => ReadPmdString(br, 100)).ToList();
-
-					if (br.GetRemainingLength() > 0)
-					{
-						for (var i = br.ReadInt32() - 1; i >= 0; i--)
-							rt.Rigids.Add(PmdRigidBody.Parse(br));
-
-						for (var i = br.ReadInt32() - 1; i >= 0; i--)
-							rt.Constraints.Add(PmdConstraint.Parse(br));
-					}
+					for (var i = br.ReadInt32() - 1; i >= 0; i--)
+						rt.Constraints.Add(PmdConstraint.Parse(br));
 				}
 			}
 
@@ -260,63 +259,63 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public void Write(Stream stream)
 		{
-			using (var bw = new BinaryWriter(stream))
+			// leave open
+			var bw = new BinaryWriter(stream);
+
+			bw.Write(Encoding.GetBytes("Pmd"));
+			bw.Write(this.Version);
+			WritePmdString(bw, this.ModelName, 20);
+			WritePmdString(bw, this.Description, 256);
+
+			bw.Write((uint)this.Vertices.Count);
+			this.Vertices.ForEach(_ => _.Write(bw));
+
+			bw.Write((uint)this.Indices.Count);
+			this.Indices.ForEach(bw.Write);
+
+			bw.Write((uint)this.Materials.Count);
+			this.Materials.ForEach(_ => _.Write(bw));
+
+			bw.Write((ushort)this.Bones.Count);
+			this.Bones.ForEach(_ => _.Write(bw));
+
+			bw.Write((ushort)this.IK.Count);
+			this.IK.ForEach(_ => _.Write(bw));
+
+			bw.Write((ushort)this.Morphs.Count);
+			this.Morphs.ForEach(_ => _.Write(bw));
+
+			bw.Write((byte)this.VisibleMorphs.Count);
+			this.VisibleMorphs.ForEach(_ => bw.Write(_));
+
+			bw.Write((byte)this.VisibleBoneCategories.Count);
+			this.VisibleBoneCategories.ForEach(_ => WritePmdString(bw, _, 50));
+
+			bw.Write((uint)this.VisibleBones.Count);
+			this.VisibleBones.ForEach(_ =>
 			{
-				bw.Write(Encoding.GetBytes("Pmd"));
-				bw.Write(this.Version);
-				WritePmdString(bw, this.ModelName, 20);
-				WritePmdString(bw, this.Description, 256);
+				bw.Write(_.Key);
+				bw.Write(_.Value);
+			});
 
-				bw.Write((uint)this.Vertices.Count);
-				this.Vertices.ForEach(_ => _.Write(bw));
+			bw.Write(this.EnglishCompatible);
 
-				bw.Write((uint)this.Indices.Count);
-				this.Indices.ForEach(bw.Write);
-
-				bw.Write((uint)this.Materials.Count);
-				this.Materials.ForEach(_ => _.Write(bw));
-
-				bw.Write((ushort)this.Bones.Count);
-				this.Bones.ForEach(_ => _.Write(bw));
-
-				bw.Write((ushort)this.IK.Count);
-				this.IK.ForEach(_ => _.Write(bw));
-
-				bw.Write((ushort)this.Morphs.Count);
-				this.Morphs.ForEach(_ => _.Write(bw));
-
-				bw.Write((byte)this.VisibleMorphs.Count);
-				this.VisibleMorphs.ForEach(_ => bw.Write(_));
-
-				bw.Write((byte)this.VisibleBoneCategories.Count);
-				this.VisibleBoneCategories.ForEach(_ => WritePmdString(bw, _, 50));
-
-				bw.Write((uint)this.VisibleBones.Count);
-				this.VisibleBones.ForEach(_ =>
-				{
-					bw.Write(_.Key);
-					bw.Write(_.Value);
-				});
-
-				bw.Write(this.EnglishCompatible);
-
-				if (this.EnglishCompatible)
-				{
-					WritePmdString(bw, this.EnglishModelName, 20);
-					WritePmdString(bw, this.EnglishDescription, 256);
-					Enumerable.Range(0, this.Bones.Count).Select(_ => _ < this.EnglishBoneNames.Count ? this.EnglishBoneNames[_] : null).ForEach(_ => WritePmdString(bw, _, 20));
-					Enumerable.Range(0, this.Morphs.Count - 1).Select(_ => _ < this.EnglishMorphNames.Count ? this.EnglishMorphNames[_] : null).ForEach(_ => WritePmdString(bw, _, 20));
-					Enumerable.Range(0, this.VisibleBoneCategories.Count).Select(_ => _ < this.EnglishVisibleBoneCategories.Count ? this.EnglishVisibleBoneCategories[_] : null).ForEach(_ => WritePmdString(bw, _, 50));
-				}
-
-				Enumerable.Range(0, 10).Select(_ => _ < this.ToonFileNames.Count ? this.ToonFileNames[_] : null).ForEach(_ => WritePmdString(bw, _, 100));
-
-				bw.Write((uint)this.Rigids.Count);
-				this.Rigids.ForEach(_ => _.Write(bw));
-
-				bw.Write((uint)this.Constraints.Count);
-				this.Constraints.ForEach(_ => _.Write(bw));
+			if (this.EnglishCompatible)
+			{
+				WritePmdString(bw, this.EnglishModelName, 20);
+				WritePmdString(bw, this.EnglishDescription, 256);
+				Enumerable.Range(0, this.Bones.Count).Select(_ => _ < this.EnglishBoneNames.Count ? this.EnglishBoneNames[_] : null).ForEach(_ => WritePmdString(bw, _, 20));
+				Enumerable.Range(0, this.Morphs.Count - 1).Select(_ => _ < this.EnglishMorphNames.Count ? this.EnglishMorphNames[_] : null).ForEach(_ => WritePmdString(bw, _, 20));
+				Enumerable.Range(0, this.VisibleBoneCategories.Count).Select(_ => _ < this.EnglishVisibleBoneCategories.Count ? this.EnglishVisibleBoneCategories[_] : null).ForEach(_ => WritePmdString(bw, _, 50));
 			}
+
+			Enumerable.Range(0, 10).Select(_ => _ < this.ToonFileNames.Count ? this.ToonFileNames[_] : null).ForEach(_ => WritePmdString(bw, _, 100));
+
+			bw.Write((uint)this.Rigids.Count);
+			this.Rigids.ForEach(_ => _.Write(bw));
+
+			bw.Write((uint)this.Constraints.Count);
+			this.Constraints.ForEach(_ => _.Write(bw));
 		}
 	}
 }

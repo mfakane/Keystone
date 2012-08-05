@@ -55,45 +55,44 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 			var rt = new MvdDocument();
 			var systemEncoding = Encoding.GetEncoding(932);
 
-			using (var br = new BinaryReader(stream))
+			// leave open
+			var br = new BinaryReader(stream);
+			var header = ReadMvdString(br, 30, systemEncoding);
+
+			if (header != DisplayName)
+				throw new InvalidOperationException("invalid format");
+
+			rt.Version = br.ReadSingle();
+
+			if (rt.Version >= 2)
+				throw new NotSupportedException("specified format version not supported");
+
+			switch (br.ReadByte())
 			{
-				var header = ReadMvdString(br, 30, systemEncoding);
+				case 0:
+					rt.Encoding = Encoding.Unicode;
 
-				if (header != DisplayName)
-					throw new InvalidOperationException("invalid format");
+					break;
+				case 1:
+				default:
+					rt.Encoding = Encoding.UTF8;
 
-				rt.Version = br.ReadSingle();
+					break;
+			}
 
-				if (rt.Version >= 2)
-					throw new NotSupportedException("specified format version not supported");
+			rt.ObjectName = rt.Encoding.GetString(br.ReadSizedBuffer());
+			br.ReadSizedBuffer();	// objectNameSize2 / objectName2
+			rt.KeyFps = br.ReadSingle();
+			br.ReadSizedBuffer();	// reservedSize / reserved
 
-				switch (br.ReadByte())
-				{
-					case 0:
-						rt.Encoding = Encoding.Unicode;
+			while (br.GetRemainingLength() > 1)
+			{
+				var section = MvdSection.Parse(rt, br);
 
-						break;
-					case 1:
-					default:
-						rt.Encoding = Encoding.UTF8;
+				if (section == null)
+					break;
 
-						break;
-				}
-
-				rt.ObjectName = rt.Encoding.GetString(br.ReadSizedBuffer());
-				br.ReadSizedBuffer();	// objectNameSize2 / objectName2
-				rt.KeyFps = br.ReadSingle();
-				br.ReadSizedBuffer();	// reservedSize / reserved
-
-				while (br.GetRemainingLength() > 1)
-				{
-					var section = MvdSection.Parse(rt, br);
-
-					if (section == null)
-						break;
-
-					rt.Sections.Add(section);
-				}
+				rt.Sections.Add(section);
 			}
 
 			return rt;
@@ -106,26 +105,25 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 
 		public void Write(Stream stream)
 		{
-			using (var bw = new BinaryWriter(stream))
-			{
-				var buf = new byte[30];
+			// leave open
+			var bw = new BinaryWriter(stream);
+			var buf = new byte[30];
 
-				Encoding.GetEncoding(932).GetBytes(DisplayName, 0, DisplayName.Length, buf, 0);
-				bw.Write(buf);
-				bw.Write(this.Version);
-				bw.Write((byte)(this.Encoding.CodePage == Encoding.Unicode.CodePage ? 0 : 1));
+			Encoding.GetEncoding(932).GetBytes(DisplayName, 0, DisplayName.Length, buf, 0);
+			bw.Write(buf);
+			bw.Write(this.Version);
+			bw.Write((byte)(this.Encoding.CodePage == Encoding.Unicode.CodePage ? 0 : 1));
 
-				bw.WriteSizedBuffer(this.Encoding.GetBytes(this.ObjectName));
-				bw.WriteSizedBuffer(this.Encoding.GetBytes(this.ObjectName));
-				bw.Write(this.KeyFps);
-				bw.WriteSizedBuffer(new byte[0]);
+			bw.WriteSizedBuffer(this.Encoding.GetBytes(this.ObjectName));
+			bw.WriteSizedBuffer(this.Encoding.GetBytes(this.ObjectName));
+			bw.Write(this.KeyFps);
+			bw.WriteSizedBuffer(new byte[0]);
 
-				foreach (var i in this.Sections)
-					i.Write(this, bw);
+			foreach (var i in this.Sections)
+				i.Write(this, bw);
 
-				bw.Write((byte)MvdTag.Eof);
-				bw.Write((byte)0);
-			}
+			bw.Write((byte)MvdTag.Eof);
+			bw.Write((byte)0);
 		}
 	}
 }

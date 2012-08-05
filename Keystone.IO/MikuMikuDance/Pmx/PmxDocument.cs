@@ -114,72 +114,71 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public static PmxDocument Parse(Stream stream)
 		{
-			using (var br = new BinaryReader(stream))
-			{
-				var header = Encoding.ASCII.GetString(br.ReadBytes(4));
-				var rt = new PmxDocument();
+			// leave open
+			var br = new BinaryReader(stream);
+			var header = Encoding.ASCII.GetString(br.ReadBytes(4));
+			var rt = new PmxDocument();
 
-				if (header != "PMX ")
-					throw new InvalidOperationException("invalid format");
+			if (header != "PMX ")
+				throw new InvalidOperationException("invalid format");
 
-				rt.Version = br.ReadSingle();
+			rt.Version = br.ReadSingle();
 
-				if (rt.Version != 2 &&
-					rt.Version != 2.1f)
-					throw new NotSupportedException("specified format version not supported");
+			if (rt.Version != 2 &&
+				rt.Version != 2.1f)
+				throw new NotSupportedException("specified format version not supported");
 
-				rt.Header = PmxHeader.Parse(br);
-				rt.ModelInformation = PmxModelInformation.Parse(br, rt);
-				rt.Vertices = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxVertex.Parse(br, rt)).ToList();
-				rt.Indices = Enumerable.Range(0, br.ReadInt32()).Select(_ => rt.ReadIndex(br, PmxIndexKind.Vertex)).ToList();
-				rt.Textures = Enumerable.Range(0, br.ReadInt32()).Select(_ => rt.ReadString(br)).ToList();
-				rt.Materials = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxMaterial.Parse(br, rt)).ToList();
-				rt.Bones = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxBone.Parse(br, rt)).ToList();
-				rt.Morphs = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxMorph.Parse(br, rt)).ToList();
-				rt.DisplayList = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxDisplayList.Parse(br, rt)).ToList();
-				rt.Rigids = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxRigidBody.Parse(br, rt)).ToList();
-				rt.Constraints = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxConstraint.Parse(br, rt)).ToList();
+			rt.Header = PmxHeader.Parse(br);
+			rt.ModelInformation = PmxModelInformation.Parse(br, rt);
+			rt.Vertices = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxVertex.Parse(br, rt)).ToList();
+			rt.Indices = Enumerable.Range(0, br.ReadInt32()).Select(_ => rt.ReadIndex(br, PmxIndexKind.Vertex)).ToList();
+			rt.Textures = Enumerable.Range(0, br.ReadInt32()).Select(_ => rt.ReadString(br)).ToList();
+			rt.Materials = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxMaterial.Parse(br, rt)).ToList();
+			rt.Bones = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxBone.Parse(br, rt)).ToList();
+			rt.Morphs = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxMorph.Parse(br, rt)).ToList();
+			rt.DisplayList = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxDisplayList.Parse(br, rt)).ToList();
+			rt.Rigids = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxRigidBody.Parse(br, rt)).ToList();
+			rt.Constraints = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxConstraint.Parse(br, rt)).ToList();
 
-				if (rt.Version > 2)
-					rt.SoftBodies = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxSoftBody.Parse(br, rt)).ToList();
+			if (rt.Version > 2)
+				rt.SoftBodies = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxSoftBody.Parse(br, rt)).ToList();
 
-				return rt;
-			}
+			return rt;
 		}
 
 		public void Write(Stream stream)
 		{
-			using (var bw = new BinaryWriter(stream))
+			// leave open
+			var bw = new BinaryWriter(stream);
+
+			bw.Write(Encoding.ASCII.GetBytes("PMX "));
+			bw.Write(this.Version);
+			this.Header.Write(bw);
+			this.ModelInformation.Write(bw, this);
+
+			bw.Write(this.Vertices.Count);
+			this.Vertices.ForEach(_ => _.Write(bw, this));
+			bw.Write(this.Indices.Count);
+			this.Indices.ForEach(_ => this.WriteIndex(bw, PmxIndexKind.Vertex, _));
+			bw.Write(this.Textures.Count);
+			this.Textures.ForEach(_ => this.WriteString(bw, _));
+			bw.Write(this.Materials.Count);
+			this.Materials.ForEach(_ => _.Write(bw, this));
+			bw.Write(this.Bones.Count);
+			this.Bones.ForEach(_ => _.Write(bw, this));
+			bw.Write(this.Morphs.Count);
+			this.Morphs.ForEach(_ => _.Write(bw, this));
+			bw.Write(this.DisplayList.Count);
+			this.DisplayList.ForEach(_ => _.Write(bw, this));
+			bw.Write(this.Rigids.Count);
+			this.Rigids.ForEach(_ => _.Write(bw, this));
+			bw.Write(this.Constraints.Count);
+			this.Constraints.ForEach(_ => _.Write(bw, this));
+
+			if (this.Version > 2)
 			{
-				bw.Write(Encoding.ASCII.GetBytes("PMX "));
-				bw.Write(this.Version);
-				this.Header.Write(bw);
-				this.ModelInformation.Write(bw, this);
-
-				bw.Write(this.Vertices.Count);
-				this.Vertices.ForEach(_ => _.Write(bw, this));
-				bw.Write(this.Indices.Count);
-				this.Indices.ForEach(_ => this.WriteIndex(bw, PmxIndexKind.Vertex, _));
-				bw.Write(this.Textures.Count);
-				this.Textures.ForEach(_ => this.WriteString(bw, _));
-				bw.Write(this.Materials.Count);
-				this.Materials.ForEach(_ => _.Write(bw, this));
-				bw.Write(this.Bones.Count);
-				this.Bones.ForEach(_ => _.Write(bw, this));
-				bw.Write(this.Morphs.Count);
-				this.Morphs.ForEach(_ => _.Write(bw, this));
-				bw.Write(this.DisplayList.Count);
-				this.DisplayList.ForEach(_ => _.Write(bw, this));
-				bw.Write(this.Rigids.Count);
-				this.Rigids.ForEach(_ => _.Write(bw, this));
-				bw.Write(this.Constraints.Count);
-				this.Constraints.ForEach(_ => _.Write(bw, this));
-
-				if (this.Version > 2)
-				{
-					bw.Write(this.SoftBodies.Count);
-					this.SoftBodies.ForEach(_ => _.Write(bw, this));
-				}
+				bw.Write(this.SoftBodies.Count);
+				this.SoftBodies.ForEach(_ => _.Write(bw, this));
 			}
 		}
 
