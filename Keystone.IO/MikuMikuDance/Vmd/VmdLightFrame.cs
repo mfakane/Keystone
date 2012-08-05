@@ -41,8 +41,8 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 		public void Write(BinaryWriter bw)
 		{
 			bw.Write(this.FrameTime);
-			this.Position.ForEach(bw.Write);
 			this.Color.ForEach(bw.Write);
+			this.Position.ForEach(bw.Write);
 		}
 	}
 }
