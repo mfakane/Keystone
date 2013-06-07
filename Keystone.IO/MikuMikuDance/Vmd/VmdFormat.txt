@@ -1,4 +1,4 @@
-﻿// .vmd format definition
+// .vmd format definition
 // bool: _Bool (true: value != 0, false: value == 0)
 // char: uint8_t
 
@@ -92,4 +92,18 @@ struct SelfShadowFrame
 	DWORD frameTime;
 	char model;			// 0: none, 1: model1, 2: model2
 	float distance;		// (10000 - distance_on_mmd) / 100000
+}
+
+struct PropertyFrame
+{
+	DWORD frameTime,
+	char visible;		// 0: invisible, 1: visible
+	int ikCount;
+	IKState ikStates[ikCount];
+}
+
+struct IKState
+{
+	char name[20];
+	char enabled;		// 0: disabled, 1: enabled
 }

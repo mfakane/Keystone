@@ -138,6 +138,7 @@
     <Compile Include="MikuMikuDance\Vmd\VmdInterpolationPoint.cs" />
     <Compile Include="MikuMikuDance\Vmd\VmdLightFrame.cs" />
     <Compile Include="MikuMikuDance\Vmd\VmdBoneFrame.cs" />
+    <Compile Include="MikuMikuDance\Vmd\VmdPropertyFrame.cs" />
     <Compile Include="MikuMikuDance\Vmd\VmdSelfShadowFrame.cs" />
     <Compile Include="MikuMikuDance\Vmd\VmdMorphFrame.cs" />
     <Compile Include="MikuMikuDance\Vmd\VmdSelfShadowModel.cs" />

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -57,6 +57,12 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
+		public IList<VmdPropertyFrame> PropertyFrames
+		{
+			get;
+			set;
+		}
+
 		public VmdDocument()
 		{
 			this.Version = VmdVersion.MMDVer3;
@@ -65,6 +71,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			this.CameraFrames = new List<VmdCameraFrame>();
 			this.LightFrames = new List<VmdLightFrame>();
 			this.SelfShadowFrames = new List<VmdSelfShadowFrame>();
+			this.PropertyFrames = new List<VmdPropertyFrame>();
 		}
 
 		public static VmdDocument Parse(Stream stream)
@@ -90,6 +97,9 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 			if (br.GetRemainingLength() > 4)
 				rt.SelfShadowFrames = ReadSelfShadowFrames(br).ToList();
+
+			if (br.GetRemainingLength() > 4)
+				rt.PropertyFrames = ReadPropertyFrames(br).ToList();
 
 			return rt;
 		}
@@ -134,6 +144,14 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 				yield return VmdSelfShadowFrame.Parse(br);
 		}
 
+		static IEnumerable<VmdPropertyFrame> ReadPropertyFrames(BinaryReader br)
+		{
+			var count = br.ReadUInt32();
+
+			for (uint i = 0; i < count; i++)
+				yield return VmdPropertyFrame.Parse(br);
+		}
+
 		internal static string ReadVmdString(BinaryReader br, int count)
 		{
 			return Encoding.GetString(br.ReadBytes(count).TakeWhile(_ => _ != '\0').ToArray());
@@ -176,6 +194,9 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			{
 				bw.Write(this.SelfShadowFrames.Count);
 				this.SelfShadowFrames.ForEach(_ => _.Write(bw));
+
+				bw.Write(this.PropertyFrames.Count);
+				this.PropertyFrames.ForEach(_ => _.Write(bw));
 			}
 
 			bw.Write(0);
