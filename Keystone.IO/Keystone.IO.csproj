@@ -104,6 +104,7 @@
     <Compile Include="MikuMikuDance\Pmx\PmxDisplayItem.cs" />
     <Compile Include="MikuMikuDance\Pmx\PmxDisplayItemKind.cs" />
     <Compile Include="MikuMikuDance\Pmx\PmxDisplayList.cs" />
+    <Compile Include="MikuMikuDance\Pmx\PmxIndexCache.cs" />
     <Compile Include="MikuMikuDance\Pmx\PmxRigidKind.cs" />
     <Compile Include="MikuMikuDance\Pmx\PmxBone.cs" />
     <Compile Include="MikuMikuDance\Pmx\PmxBoneCapabilities.cs" />
@@ -125,6 +126,7 @@
     <Compile Include="MikuMikuDance\Pmx\PmxSoftBodyAnchor.cs" />
     <Compile Include="MikuMikuDance\Pmx\PmxSoftBodyKind.cs" />
     <Compile Include="MikuMikuDance\Pmx\PmxSoftBodyOptions.cs" />
+    <Compile Include="MikuMikuDance\Pmx\PmxTexture.cs" />
     <Compile Include="MikuMikuDance\Pmx\PmxTextureMode.cs" />
     <Compile Include="MikuMikuDance\Pmx\PmxVertexIndexSize.cs" />
     <Compile Include="MikuMikuDance\Pmx\PmxHeader.cs" />

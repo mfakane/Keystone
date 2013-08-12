@@ -39,13 +39,13 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
-		public List<int> Indices
+		public List<PmxVertex> Indices
 		{
 			get;
 			set;
 		}
 
-		public List<string> Textures
+		public List<PmxTexture> Textures
 		{
 			get;
 			set;
@@ -102,8 +102,8 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			this.Header = new PmxHeader();
 			this.ModelInformation = new PmxModelInformation();
 			this.Vertices = new List<PmxVertex>();
-			this.Indices = new List<int>();
-			this.Textures = new List<string>();
+			this.Indices = new List<PmxVertex>();
+			this.Textures = new List<PmxTexture>();
 			this.Materials = new List<PmxMaterial>();
 			this.Bones = new List<PmxBone>();
 			this.Morphs = new List<PmxMorph>();
@@ -131,11 +131,23 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			rt.Header = PmxHeader.Parse(br);
 			rt.ModelInformation = PmxModelInformation.Parse(br, rt);
 			rt.Vertices = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxVertex.Parse(br, rt)).ToList();
-			rt.Indices = Enumerable.Range(0, br.ReadInt32()).Select(_ => rt.ReadIndex(br, PmxIndexKind.Vertex)).ToList();
-			rt.Textures = Enumerable.Range(0, br.ReadInt32()).Select(_ => rt.ReadString(br)).ToList();
+			rt.Indices = Enumerable.Range(0, br.ReadInt32()).Select(_ => rt.ReadVertex(br)).ToList();
+			rt.Textures = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxTexture.Parse(br, rt)).ToList();
 			rt.Materials = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxMaterial.Parse(br, rt)).ToList();
-			rt.Bones = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxBone.Parse(br, rt)).ToList();
-			rt.Morphs = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxMorph.Parse(br, rt)).ToList();
+			Enumerable.Range(0, br.ReadInt32()).Select(_ =>
+			{
+				while (rt.Bones.Count <= _)
+					rt.Bones.Add(new PmxBone());
+
+				return rt.Bones[_];
+			}).ForEach(_ => _.Parse(br, rt));
+			Enumerable.Range(0, br.ReadInt32()).Select(_ =>
+			{
+				while (rt.Morphs.Count <= _)
+					rt.Morphs.Add(new PmxMorph());
+
+				return rt.Morphs[_];
+			}).ForEach(_ => _.Parse(br, rt));
 			rt.DisplayList = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxDisplayList.Parse(br, rt)).ToList();
 			rt.Rigids = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxRigidBody.Parse(br, rt)).ToList();
 			rt.Constraints = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxConstraint.Parse(br, rt)).ToList();
@@ -150,6 +162,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 		{
 			// leave open
 			var bw = new BinaryWriter(stream);
+			var cache = new PmxIndexCache(this, bw);
 
 			bw.Write(Encoding.ASCII.GetBytes("PMX "));
 			bw.Write(this.Version);
@@ -157,30 +170,116 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			this.ModelInformation.Write(bw, this);
 
 			bw.Write(this.Vertices.Count);
-			this.Vertices.ForEach(_ => _.Write(bw, this));
+			this.Vertices.ForEach(_ => _.Write(bw, this, cache));
 			bw.Write(this.Indices.Count);
-			this.Indices.ForEach(_ => this.WriteIndex(bw, PmxIndexKind.Vertex, _));
+			this.Indices.ForEach(_ => cache.Write(_));
 			bw.Write(this.Textures.Count);
-			this.Textures.ForEach(_ => this.WriteString(bw, _));
+			this.Textures.ForEach(_ => _.Write(bw, this));
 			bw.Write(this.Materials.Count);
-			this.Materials.ForEach(_ => _.Write(bw, this));
+			this.Materials.ForEach(_ => _.Write(bw, this, cache));
 			bw.Write(this.Bones.Count);
-			this.Bones.ForEach(_ => _.Write(bw, this));
+			this.Bones.ForEach(_ => _.Write(bw, this, cache));
 			bw.Write(this.Morphs.Count);
-			this.Morphs.ForEach(_ => _.Write(bw, this));
+			this.Morphs.ForEach(_ => _.Write(bw, this, cache));
 			bw.Write(this.DisplayList.Count);
-			this.DisplayList.ForEach(_ => _.Write(bw, this));
+			this.DisplayList.ForEach(_ => _.Write(bw, this, cache));
 			bw.Write(this.Rigids.Count);
-			this.Rigids.ForEach(_ => _.Write(bw, this));
+			this.Rigids.ForEach(_ => _.Write(bw, this, cache));
 			bw.Write(this.Constraints.Count);
-			this.Constraints.ForEach(_ => _.Write(bw, this));
+			this.Constraints.ForEach(_ => _.Write(bw, this, cache));
 
 			if (this.Version > 2)
 			{
 				bw.Write(this.SoftBodies.Count);
-				this.SoftBodies.ForEach(_ => _.Write(bw, this));
+				this.SoftBodies.ForEach(_ => _.Write(bw, this, cache));
 			}
 		}
+
+
+		#region Vertex
+
+		PmxVertex GetVertexFromIndex(int vertex)
+		{
+			return vertex == -1 ? null : this.Vertices[vertex];
+		}
+
+		internal PmxVertex ReadVertex(BinaryReader br)
+		{
+			return GetVertexFromIndex(ReadIndex(br, PmxIndexKind.Vertex));
+		}
+
+		#endregion
+		#region Texture
+
+		PmxTexture GetTextureFromIndex(int texture)
+		{
+			return texture == -1 ? null : this.Textures[texture];
+		}
+
+		internal PmxTexture ReadTexture(BinaryReader br)
+		{
+			return GetTextureFromIndex(ReadIndex(br, PmxIndexKind.Texture));
+		}
+
+		#endregion
+		#region Material
+
+		PmxMaterial GetMaterialFromIndex(int material)
+		{
+			return material == -1 ? null : this.Materials[material];
+		}
+
+		internal PmxMaterial ReadMaterial(BinaryReader br)
+		{
+			return GetMaterialFromIndex(ReadIndex(br, PmxIndexKind.Material));
+		}
+
+		#endregion
+		#region Bone
+
+		PmxBone GetBoneFromIndex(int bone)
+		{
+			while (this.Bones.Count <= bone)
+				this.Bones.Add(new PmxBone());
+
+			return bone == -1 ? null : this.Bones[bone];
+		}
+
+		internal PmxBone ReadBone(BinaryReader br)
+		{
+			return GetBoneFromIndex(ReadIndex(br, PmxIndexKind.Bone));
+		}
+
+		#endregion
+		#region Morph
+
+		PmxMorph GetMorphFromIndex(int morph)
+		{
+			while (this.Morphs.Count <= morph)
+				this.Morphs.Add(new PmxMorph());
+
+			return morph == -1 ? null : this.Morphs[morph];
+		}
+
+		internal PmxMorph ReadMorph(BinaryReader br)
+		{
+			return GetMorphFromIndex(ReadIndex(br, PmxIndexKind.Morph));
+		}
+
+		#endregion
+		#region RigidBody
+
+		PmxRigidBody GetRigidBodyFromIndex(int rigidBody)
+		{
+			return rigidBody == -1 ? null : this.Rigids[rigidBody];
+		}
+
+		internal PmxRigidBody ReadRigidBody(BinaryReader br)
+		{
+			return GetRigidBodyFromIndex(ReadIndex(br, PmxIndexKind.Rigid));
+		}
+
+		#endregion
 
 		internal string ReadString(BinaryReader br)
 		{

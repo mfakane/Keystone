@@ -76,7 +76,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			return rt;
 		}
 
-		public void Write(BinaryWriter bw, PmxDocument doc)
+		public void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
 			if (doc.Version < 2.1f &&
 				this.SkinningKind == PmxSkinningKind.DualQuaternionDeforming)
@@ -87,7 +87,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			this.UV.ForEach(bw.Write);
 			this.AdditionalUV.ForEach(_ => _.ForEach(bw.Write));
 			bw.Write((byte)this.SkinningKind);
-			this.SkinningFunction.Write(bw, doc);
+			this.SkinningFunction.Write(bw, doc, cache);
 			bw.Write(this.EdgeSize);
 		}
 	}

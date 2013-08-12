@@ -1,4 +1,5 @@
 ﻿using System.IO;
+
 namespace Linearstar.Keystone.IO.MikuMikuDance.Pmx
 {
 	/// <summary>
@@ -6,13 +7,13 @@ namespace Linearstar.Keystone.IO.MikuMikuDance.Pmx
 	/// </summary>
 	public class PmxSoftBodyAnchor
 	{
-		public int Rigid
+		public PmxRigidBody Rigid
 		{
 			get;
 			set;
 		}
 
-		public int Vertex
+		public PmxVertex Vertex
 		{
 			get;
 			set;
@@ -28,16 +29,16 @@ namespace Linearstar.Keystone.IO.MikuMikuDance.Pmx
 		{
 			return new PmxSoftBodyAnchor
 			{
-				Rigid = doc.ReadIndex(br, PmxIndexKind.Rigid),
-				Vertex = doc.ReadIndex(br, PmxIndexKind.Vertex),
+				Rigid = doc.ReadRigidBody(br),
+				Vertex = doc.ReadVertex(br),
 				IsNearMode = br.ReadBoolean(),
 			};
 		}
 
-		public void Write(BinaryWriter bw, PmxDocument doc)
+		public void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
-			doc.WriteIndex(bw, PmxIndexKind.Rigid, this.Rigid);
-			doc.WriteIndex(bw, PmxIndexKind.Vertex, this.Vertex);
+			cache.Write(this.Rigid);
+			cache.Write(this.Vertex);
 			bw.Write(this.IsNearMode);
 		}
 	}

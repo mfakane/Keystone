@@ -4,7 +4,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 {
 	public class PmxIKBinding
 	{
-		public int Bone
+		public PmxBone Bone
 		{
 			get;
 			set;
@@ -38,7 +38,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 		{
 			var rt = new PmxIKBinding
 			{
-				Bone = doc.ReadIndex(br, PmxIndexKind.Bone),
+				Bone = doc.ReadBone(br),
 				IsAngleLimitEnabled = br.ReadBoolean(),
 			};
 
@@ -51,9 +51,9 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			return rt;
 		}
 
-		public void Write(BinaryWriter bw, PmxDocument doc)
+		public void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
-			doc.WriteIndex(bw, PmxIndexKind.Bone, this.Bone);
+			cache.Write(this.Bone);
 			bw.Write(this.IsAngleLimitEnabled);
 
 			if (this.IsAngleLimitEnabled)

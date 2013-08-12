@@ -23,13 +23,13 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			get;
 		}
 
-		public int RigidA
+		public PmxRigidBody RigidA
 		{
 			get;
 			set;
 		}
 
-		public int RigidB
+		public PmxRigidBody RigidB
 		{
 			get;
 			set;
@@ -88,7 +88,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public abstract void Read(BinaryReader br, PmxDocument doc);
 
-		public virtual void Write(BinaryWriter bw, PmxDocument doc)
+		public virtual void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
 			doc.WriteString(bw, this.Name);
 			doc.WriteString(bw, this.EnglishName);
@@ -169,8 +169,8 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public override void Read(BinaryReader br, PmxDocument doc)
 		{
-			this.RigidA = doc.ReadIndex(br, PmxIndexKind.Rigid);
-			this.RigidB = doc.ReadIndex(br, PmxIndexKind.Rigid);
+			this.RigidA = doc.ReadRigidBody(br);
+			this.RigidB = doc.ReadRigidBody(br);
 			this.Position = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
 			this.Rotation = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
 			this.LinearLowerLimit = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
@@ -181,11 +181,11 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			this.AngularSpringStiffness = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
 		}
 
-		public override void Write(BinaryWriter bw, PmxDocument doc)
+		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
-			base.Write(bw, doc);
-			doc.WriteIndex(bw, PmxIndexKind.Rigid, this.RigidA);
-			doc.WriteIndex(bw, PmxIndexKind.Rigid, this.RigidB);
+			base.Write(bw, doc, cache);
+			cache.Write(this.RigidA);
+			cache.Write(this.RigidB);
 			this.Position.ForEach(bw.Write);
 			this.Rotation.ForEach(bw.Write);
 			this.LinearLowerLimit.ForEach(bw.Write);
@@ -250,9 +250,9 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			throw new NotSupportedException("use casting from PmxSpringSixDegreesOfFreedomConstraint instead");
 		}
 
-		public override void Write(BinaryWriter bw, PmxDocument doc)
+		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
-			((PmxSpringSixDegreesOfFreedomConstraint)this).Write(bw, doc);
+			((PmxSpringSixDegreesOfFreedomConstraint)this).Write(bw, doc, cache);
 		}
 
 		public static explicit operator PmxSixDegreesOfFreedomConstraint(PmxSpringSixDegreesOfFreedomConstraint self)
@@ -308,9 +308,9 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			throw new NotSupportedException("use casting from PmxSpringSixDegreesOfFreedomConstraint instead");
 		}
 
-		public override void Write(BinaryWriter bw, PmxDocument doc)
+		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
-			((PmxSpringSixDegreesOfFreedomConstraint)this).Write(bw, doc);
+			((PmxSpringSixDegreesOfFreedomConstraint)this).Write(bw, doc, cache);
 		}
 
 		public static explicit operator PmxPointToPointConstraint(PmxSpringSixDegreesOfFreedomConstraint self)
@@ -435,9 +435,9 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			throw new NotSupportedException("use casting from PmxSpringSixDegreesOfFreedomConstraint instead");
 		}
 
-		public override void Write(BinaryWriter bw, PmxDocument doc)
+		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
-			((PmxSpringSixDegreesOfFreedomConstraint)this).Write(bw, doc);
+			((PmxSpringSixDegreesOfFreedomConstraint)this).Write(bw, doc, cache);
 		}
 
 		public static explicit operator PmxConeTwistConstraint(PmxSpringSixDegreesOfFreedomConstraint self)
@@ -566,9 +566,9 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			throw new NotSupportedException("use casting from PmxSpringSixDegreesOfFreedomConstraint instead");
 		}
 
-		public override void Write(BinaryWriter bw, PmxDocument doc)
+		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
-			((PmxSpringSixDegreesOfFreedomConstraint)this).Write(bw, doc);
+			((PmxSpringSixDegreesOfFreedomConstraint)this).Write(bw, doc, cache);
 		}
 
 		public static explicit operator PmxSliderConstraint(PmxSpringSixDegreesOfFreedomConstraint self)
@@ -687,9 +687,9 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			throw new NotSupportedException("use casting from PmxSpringSixDegreesOfFreedomConstraint instead");
 		}
 
-		public override void Write(BinaryWriter bw, PmxDocument doc)
+		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
-			((PmxSpringSixDegreesOfFreedomConstraint)this).Write(bw, doc);
+			((PmxSpringSixDegreesOfFreedomConstraint)this).Write(bw, doc, cache);
 		}
 
 		public static explicit operator PmxHingeConstraint(PmxSpringSixDegreesOfFreedomConstraint self)

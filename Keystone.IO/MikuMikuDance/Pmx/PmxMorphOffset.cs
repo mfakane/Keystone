@@ -6,7 +6,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 	public abstract class PmxMorphOffset
 	{
 		public abstract void Read(BinaryReader br, PmxDocument doc);
-		public abstract void Write(BinaryWriter bw, PmxDocument doc);
+		public abstract void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache);
 
 		public static PmxMorphOffset Parse(BinaryReader br, PmxDocument doc, PmxMorphKind kind)
 		{
@@ -70,7 +70,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 	public class PmxVertexMorphOffset : PmxMorphOffset
 	{
-		public int Vertex
+		public PmxVertex Vertex
 		{
 			get;
 			set;
@@ -92,20 +92,20 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public override void Read(BinaryReader br, PmxDocument doc)
 		{
-			this.Vertex = doc.ReadIndex(br, PmxIndexKind.Vertex);
+			this.Vertex = doc.ReadVertex(br);
 			this.Offset = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
 		}
 
-		public override void Write(BinaryWriter bw, PmxDocument doc)
+		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
-			doc.WriteIndex(bw, PmxIndexKind.Vertex, this.Vertex);
+			cache.Write(this.Vertex);
 			this.Offset.ForEach(bw.Write);
 		}
 	}
 
 	public class PmxUVMorphOffset : PmxMorphOffset
 	{
-		public int Vertex
+		public PmxVertex Vertex
 		{
 			get;
 			set;
@@ -127,20 +127,20 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public override void Read(BinaryReader br, PmxDocument doc)
 		{
-			this.Vertex = doc.ReadIndex(br, PmxIndexKind.Vertex);
+			this.Vertex = doc.ReadVertex(br);
 			this.Offset = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
 		}
 
-		public override void Write(BinaryWriter bw, PmxDocument doc)
+		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
-			doc.WriteIndex(bw, PmxIndexKind.Vertex, this.Vertex);
+			cache.Write(this.Vertex);
 			this.Offset.ForEach(bw.Write);
 		}
 	}
 
 	public class PmxBoneMorphOffset : PmxMorphOffset
 	{
-		public int Bone
+		public PmxBone Bone
 		{
 			get;
 			set;
@@ -172,14 +172,14 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public override void Read(BinaryReader br, PmxDocument doc)
 		{
-			this.Bone = doc.ReadIndex(br, PmxIndexKind.Bone);
+			this.Bone = doc.ReadBone(br);
 			this.MovementOffset = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
 			this.RotationOffset = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
 		}
 
-		public override void Write(BinaryWriter bw, PmxDocument doc)
+		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
-			doc.WriteIndex(bw, PmxIndexKind.Bone, this.Bone);
+			cache.Write(this.Bone);
 			this.MovementOffset.ForEach(bw.Write);
 			this.RotationOffset.ForEach(bw.Write);
 		}
@@ -187,7 +187,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 	public class PmxMaterialMorphOffset : PmxMorphOffset
 	{
-		public int Material
+		public PmxMaterial Material
 		{
 			get;
 			set;
@@ -282,7 +282,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public override void Read(BinaryReader br, PmxDocument doc)
 		{
-			this.Material = doc.ReadIndex(br, PmxIndexKind.Material);
+			this.Material = doc.ReadMaterial(br);
 			this.Kind = (PmxMaterialMorphKind)br.ReadByte();
 			this.Diffuse = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
 			this.Specular = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
@@ -295,9 +295,9 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			this.ToonTexture = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
 		}
 
-		public override void Write(BinaryWriter bw, PmxDocument doc)
+		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
-			doc.WriteIndex(bw, PmxIndexKind.Material, this.Material);
+			cache.Write(this.Material);
 			bw.Write((byte)this.Kind);
 			this.Diffuse.ForEach(bw.Write);
 			this.Specular.ForEach(bw.Write);
@@ -313,7 +313,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 	public class PmxGroupMorphOffset : PmxMorphOffset
 	{
-		public int Morph
+		public PmxMorph Morph
 		{
 			get;
 			set;
@@ -331,13 +331,13 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public override void Read(BinaryReader br, PmxDocument doc)
 		{
-			this.Morph = doc.ReadIndex(br, PmxIndexKind.Morph);
+			this.Morph = doc.ReadMorph(br);
 			this.Weight = br.ReadSingle();
 		}
 
-		public override void Write(BinaryWriter bw, PmxDocument doc)
+		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
-			doc.WriteIndex(bw, PmxIndexKind.Morph, this.Morph);
+			cache.Write(this.Morph);
 			bw.Write(this.Weight);
 		}
 	}
@@ -354,7 +354,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 	/// </summary>
 	public class PmxImpulseMorphOffset : PmxMorphOffset
 	{
-		public int Rigid
+		public PmxRigidBody Rigid
 		{
 			get;
 			set;
@@ -392,15 +392,15 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public override void Read(BinaryReader br, PmxDocument doc)
 		{
-			this.Rigid = doc.ReadIndex(br, PmxIndexKind.Rigid);
+			this.Rigid = doc.ReadRigidBody(br);
 			this.IsLocal = br.ReadBoolean();
 			this.CentralImpulse = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
 			this.TorqueImpulse = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
 		}
 
-		public override void Write(BinaryWriter bw, PmxDocument doc)
+		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
-			doc.WriteIndex(bw, PmxIndexKind.Rigid, this.Rigid);
+			cache.Write(this.Rigid);
 			bw.Write(this.IsLocal);
 			this.CentralImpulse.ForEach(bw.Write);
 			this.TorqueImpulse.ForEach(bw.Write);

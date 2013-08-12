@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
 namespace Linearstar.Keystone.IO.MikuMikuDance
 {
@@ -68,13 +67,13 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
-		public int MainTexture
+		public PmxTexture MainTexture
 		{
 			get;
 			set;
 		}
 
-		public int SubTexture
+		public PmxTexture SubTexture
 		{
 			get;
 			set;
@@ -92,7 +91,13 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
-		public int ToonTexture
+		public int SharedToonTexture
+		{
+			get;
+			set;
+		}
+
+		public PmxTexture CustomToonTexture
 		{
 			get;
 			set;
@@ -131,20 +136,24 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 				Options = (PmxMaterialOptions)br.ReadByte(),
 				EdgeColor = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle() },
 				EdgeSize = br.ReadSingle(),
-				MainTexture = doc.ReadIndex(br, PmxIndexKind.Texture),
-				SubTexture = doc.ReadIndex(br, PmxIndexKind.Texture),
+				MainTexture = doc.ReadTexture(br),
+				SubTexture = doc.ReadTexture(br),
 				SubTextureMode = (PmxTextureMode)br.ReadByte(),
 				UseSharedToonTexture = br.ReadBoolean(),
 			};
 
-			rt.ToonTexture = rt.UseSharedToonTexture ? br.ReadByte() : doc.ReadIndex(br, PmxIndexKind.Texture);
+			if (rt.UseSharedToonTexture)
+				rt.SharedToonTexture = br.ReadByte();
+			else
+				rt.CustomToonTexture = doc.ReadTexture(br);
+
 			rt.Comment = doc.Header.Encoding.GetString(br.ReadSizedBuffer());
 			rt.IndexCount = br.ReadInt32();
 
 			return rt;
 		}
 
-		public void Write(BinaryWriter bw, PmxDocument doc)
+		public void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
 			bw.WriteSizedBuffer(doc.Header.Encoding.GetBytes(this.Name));
 			bw.WriteSizedBuffer(doc.Header.Encoding.GetBytes(this.EnglishName));
@@ -155,15 +164,15 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			bw.Write((byte)this.Options);
 			this.EdgeColor.ForEach(bw.Write);
 			bw.Write(this.EdgeSize);
-			doc.WriteIndex(bw, PmxIndexKind.Texture, this.MainTexture);
-			doc.WriteIndex(bw, PmxIndexKind.Texture, this.SubTexture);
+			cache.Write(this.MainTexture);
+			cache.Write(this.SubTexture);
 			bw.Write((byte)this.SubTextureMode);
 			bw.Write(this.UseSharedToonTexture);
 
 			if (this.UseSharedToonTexture)
-				bw.Write((byte)this.ToonTexture);
+				bw.Write((byte)this.SharedToonTexture);
 			else
-				doc.WriteIndex(bw, PmxIndexKind.Texture, this.ToonTexture);
+				cache.Write(this.CustomToonTexture);
 
 			bw.WriteSizedBuffer(doc.Header.Encoding.GetBytes(this.Comment));
 			bw.Write(this.IndexCount);

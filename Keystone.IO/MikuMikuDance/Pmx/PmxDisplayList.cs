@@ -46,13 +46,13 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			};
 		}
 
-		public void Write(BinaryWriter bw, PmxDocument doc)
+		public void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
 			doc.WriteString(bw, this.Name);
 			doc.WriteString(bw, this.EnglishName);
 			bw.Write(this.IsSpecial);
 			bw.Write(this.Items.Count);
-			this.Items.ForEach(_ => _.Write(bw, doc));
+			this.Items.ForEach(_ => _.Write(bw, doc, cache));
 		}
 	}
 }

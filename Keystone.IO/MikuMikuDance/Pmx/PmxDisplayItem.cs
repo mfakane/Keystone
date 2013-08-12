@@ -1,37 +1,83 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace Linearstar.Keystone.IO.MikuMikuDance
 {
-	public class PmxDisplayItem
+	public abstract class PmxDisplayItem
 	{
-		public PmxDisplayItemKind Kind
+		public abstract PmxDisplayItemKind Kind
 		{
 			get;
-			set;
-		}
-
-		public int Index
-		{
-			get;
-			set;
 		}
 
 		public static PmxDisplayItem Parse(BinaryReader br, PmxDocument doc)
 		{
-			var rt = new PmxDisplayItem
+			switch ((PmxDisplayItemKind)br.ReadByte())
 			{
-				Kind = (PmxDisplayItemKind)br.ReadByte(),
-			};
-
-			rt.Index = rt.Kind == PmxDisplayItemKind.Bone ? doc.ReadIndex(br, PmxIndexKind.Bone) : doc.ReadIndex(br, PmxIndexKind.Morph);
-
-			return rt;
+				case PmxDisplayItemKind.Bone:
+					return new PmxBoneDisplayItem
+					{
+						Bone = doc.ReadBone(br),
+					};
+				case PmxDisplayItemKind.Morph:
+					return new PmxMorphDisplayItem
+					{
+						Morph = doc.ReadMorph(br),
+					};
+				default:
+					throw new InvalidOperationException();
+			}
 		}
 
-		public void Write(BinaryWriter bw, PmxDocument doc)
+		public virtual void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
 			bw.Write((byte)this.Kind);
-			doc.WriteIndex(bw, this.Kind == PmxDisplayItemKind.Bone ? PmxIndexKind.Bone : PmxIndexKind.Morph, this.Index);
+		}
+	}
+
+	public class PmxBoneDisplayItem : PmxDisplayItem
+	{
+		public override PmxDisplayItemKind Kind
+		{
+			get
+			{
+				return PmxDisplayItemKind.Bone;
+			}
+		}
+
+		public PmxBone Bone
+		{
+			get;
+			set;
+		}
+
+		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
+		{
+			base.Write(bw, doc, cache);
+			cache.Write(this.Bone);
+		}
+	}
+
+	public class PmxMorphDisplayItem : PmxDisplayItem
+	{
+		public override PmxDisplayItemKind Kind
+		{
+			get
+			{
+				return PmxDisplayItemKind.Morph;
+			}
+		}
+
+		public PmxMorph Morph
+		{
+			get;
+			set;
+		}
+
+		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
+		{
+			base.Write(bw, doc, cache);
+			cache.Write(this.Morph);
 		}
 	}
 }

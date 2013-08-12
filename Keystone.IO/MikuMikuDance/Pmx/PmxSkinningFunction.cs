@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 
 namespace Linearstar.Keystone.IO.MikuMikuDance
 {
@@ -41,12 +42,12 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 		}
 
 		public abstract void Read(BinaryReader br, PmxDocument doc);
-		public abstract void Write(BinaryWriter bw, PmxDocument doc);
+		public abstract void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache);
 	}
 
 	public class PmxLinearBlendDeforming1 : PmxSkinningFunction
 	{
-		public int Bone
+		public PmxBone Bone
 		{
 			get;
 			set;
@@ -54,23 +55,22 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public PmxLinearBlendDeforming1()
 		{
-			this.Bone = -1;
 		}
 
 		public override void Read(BinaryReader br, PmxDocument doc)
 		{
-			this.Bone = doc.ReadIndex(br, PmxIndexKind.Bone);
+			this.Bone = doc.ReadBone(br);
 		}
 
-		public override void Write(BinaryWriter bw, PmxDocument doc)
+		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
-			doc.WriteIndex(bw, PmxIndexKind.Bone, this.Bone);
+			cache.Write(this.Bone);
 		}
 	}
 
 	public class PmxLinearBlendDeforming2 : PmxSkinningFunction
 	{
-		public int[] Bones
+		public PmxBone[] Bones
 		{
 			get;
 			set;
@@ -84,25 +84,25 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public PmxLinearBlendDeforming2()
 		{
-			this.Bones = new[] { -1, -1 };
+			this.Bones = new PmxBone[2];
 		}
 
 		public override void Read(BinaryReader br, PmxDocument doc)
 		{
-			this.Bones = new[] { doc.ReadIndex(br, PmxIndexKind.Bone), doc.ReadIndex(br, PmxIndexKind.Bone) };
+			this.Bones = Enumerable.Range(0, 2).Select(_ => doc.ReadBone(br)).ToArray();
 			this.Weight = br.ReadSingle();
 		}
 
-		public override void Write(BinaryWriter bw, PmxDocument doc)
+		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
-			this.Bones.ForEach(_ => doc.WriteIndex(bw, PmxIndexKind.Bone, _));
+			this.Bones.ForEach(_ => cache.Write(_));
 			bw.Write(this.Weight);
 		}
 	}
 
 	public class PmxLinearBlendDeforming4 : PmxSkinningFunction
 	{
-		public int[] Bones
+		public PmxBone[] Bones
 		{
 			get;
 			set;
@@ -116,25 +116,25 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public PmxLinearBlendDeforming4()
 		{
-			this.Bones = new[] { -1, -1, -1, -1 };
+			this.Bones = new PmxBone[4];
 		}
 
 		public override void Read(BinaryReader br, PmxDocument doc)
 		{
-			this.Bones = new[] { doc.ReadIndex(br, PmxIndexKind.Bone), doc.ReadIndex(br, PmxIndexKind.Bone), doc.ReadIndex(br, PmxIndexKind.Bone), doc.ReadIndex(br, PmxIndexKind.Bone) };
+			this.Bones = Enumerable.Range(0, 4).Select(_ => doc.ReadBone(br)).ToArray();
 			this.Weights = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
 		}
 
-		public override void Write(BinaryWriter bw, PmxDocument doc)
+		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
-			this.Bones.ForEach(_ => doc.WriteIndex(bw, PmxIndexKind.Bone, _));
+			this.Bones.ForEach(_ => cache.Write(_));
 			this.Weights.ForEach(bw.Write);
 		}
 	}
 
 	public class PmxSphericalDeforming : PmxSkinningFunction
 	{
-		public int[] Bones
+		public PmxBone[] Bones
 		{
 			get;
 			set;
@@ -175,7 +175,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public PmxSphericalDeforming()
 		{
-			this.Bones = new[] { -1, -1 };
+			this.Bones = new PmxBone[2];
 			this.Center = new[] { 0f, 0, 0 };
 			this.RangeZero = new[] { 0f, 0, 0 };
 			this.RangeOne = new[] { 0f, 0, 0 };
@@ -183,16 +183,16 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public override void Read(BinaryReader br, PmxDocument doc)
 		{
-			this.Bones = new[] { doc.ReadIndex(br, PmxIndexKind.Bone), doc.ReadIndex(br, PmxIndexKind.Bone) };
+			this.Bones = Enumerable.Range(0, 2).Select(_ => doc.ReadBone(br)).ToArray();
 			this.Weight = br.ReadSingle();
 			this.Center = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
 			this.RangeZero = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
 			this.RangeOne = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
 		}
 
-		public override void Write(BinaryWriter bw, PmxDocument doc)
+		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
-			this.Bones.ForEach(_ => doc.WriteIndex(bw, PmxIndexKind.Bone, _));
+			this.Bones.ForEach(_ => cache.Write(_));
 			bw.Write(this.Weight);
 			this.Center.ForEach(bw.Write);
 			this.RangeZero.ForEach(bw.Write);

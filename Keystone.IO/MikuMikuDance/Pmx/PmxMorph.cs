@@ -41,22 +41,16 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			this.Offsets = new List<PmxMorphOffset>();
 		}
 
-		public static PmxMorph Parse(BinaryReader br, PmxDocument doc)
+		public void Parse(BinaryReader br, PmxDocument doc)
 		{
-			var rt = new PmxMorph
-			{
-				Name = doc.ReadString(br),
-				EnglishName = doc.ReadString(br),
-				Category = (PmxMorphCategory)br.ReadByte(),
-				Kind = (PmxMorphKind)br.ReadByte(),
-			};
-
-			rt.Offsets = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxMorphOffset.Parse(br, doc, rt.Kind)).ToList();
-
-			return rt;
+			this.Name = doc.ReadString(br);
+			this.EnglishName = doc.ReadString(br);
+			this.Category = (PmxMorphCategory)br.ReadByte();
+			this.Kind = (PmxMorphKind)br.ReadByte();
+			this.Offsets = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxMorphOffset.Parse(br, doc, this.Kind)).ToList();
 		}
 
-		public void Write(BinaryWriter bw, PmxDocument doc)
+		public void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
 			if (doc.Version < 2.1f)
 				if (this.Kind == PmxMorphKind.Flip)
@@ -69,7 +63,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			bw.Write((byte)this.Category);
 			bw.Write((byte)this.Kind);
 			bw.Write(this.Offsets.Count);
-			this.Offsets.ForEach(_ => _.Write(bw, doc));
+			this.Offsets.ForEach(_ => _.Write(bw, doc, cache));
 		}
 	}
 }

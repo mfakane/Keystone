@@ -29,7 +29,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance.Pmx
 			set;
 		}
 
-		public int RelatedMaterial
+		public PmxMaterial RelatedMaterial
 		{
 			get;
 			set;
@@ -158,7 +158,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance.Pmx
 			set;
 		}
 
-		public List<int> PinnedVertices
+		public List<PmxVertex> PinnedVertices
 		{
 			get;
 			set;
@@ -168,7 +168,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance.Pmx
 		{
 			this.Configuration = Enum.GetValues(typeof(PmxConfigurationIndex)).Cast<PmxConfigurationIndex>().ToDictionary(_ => _, _ => 0f);
 			this.Anchors = new List<PmxSoftBodyAnchor>();
-			this.PinnedVertices = new List<int>();
+			this.PinnedVertices = new List<PmxVertex>();
 		}
 
 		public static PmxSoftBody Parse(BinaryReader br, PmxDocument doc)
@@ -178,7 +178,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance.Pmx
 				Name = doc.ReadString(br),
 				EnglishName = doc.ReadString(br),
 				Kind = (PmxSoftBodyKind)br.ReadByte(),
-				RelatedMaterial = doc.ReadIndex(br, PmxIndexKind.Material),
+				RelatedMaterial = doc.ReadMaterial(br),
 				Group = br.ReadByte(),
 				CollidableGroups = (PmdRigidGroups)br.ReadUInt16(),
 				Options = (PmxSoftBodyOptions)br.ReadByte(),
@@ -196,16 +196,16 @@ namespace Linearstar.Keystone.IO.MikuMikuDance.Pmx
 				AreaAngularStiffnessCoefficient = br.ReadSingle(),
 				VolumeStiffnessCoefficient = br.ReadSingle(),
 				Anchors = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxSoftBodyAnchor.Parse(br, doc)).ToList(),
-				PinnedVertices = Enumerable.Range(0, br.ReadInt32()).Select(_ => doc.ReadIndex(br, PmxIndexKind.Vertex)).ToList(),
+				PinnedVertices = Enumerable.Range(0, br.ReadInt32()).Select(_ => doc.ReadVertex(br)).ToList(),
 			};
 		}
 
-		public void Write(BinaryWriter bw, PmxDocument doc)
+		public void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
 			doc.WriteString(bw, this.Name);
 			doc.WriteString(bw, this.EnglishName);
 			bw.Write((byte)this.Kind);
-			doc.WriteIndex(bw, PmxIndexKind.Material, this.RelatedMaterial);
+			cache.Write(this.RelatedMaterial);
 			bw.Write(this.Group);
 			bw.Write((ushort)this.CollidableGroups);
 			bw.Write((byte)this.Options);
@@ -223,9 +223,9 @@ namespace Linearstar.Keystone.IO.MikuMikuDance.Pmx
 			bw.Write(this.AreaAngularStiffnessCoefficient);
 			bw.Write(this.VolumeStiffnessCoefficient);
 			bw.Write(this.Anchors.Count);
-			this.Anchors.ForEach(_ => _.Write(bw, doc));
+			this.Anchors.ForEach(_ => _.Write(bw, doc, cache));
 			bw.Write(this.PinnedVertices.Count);
-			this.PinnedVertices.ForEach(_ => doc.WriteIndex(bw, PmxIndexKind.Vertex, _));
+			this.PinnedVertices.ForEach(_ => cache.Write(_));
 		}
 	}
 }

@@ -16,7 +16,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
-		public int RelatedBone
+		public PmxBone RelatedBone
 		{
 			get;
 			set;
@@ -110,7 +110,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			{
 				Name = doc.ReadString(br),
 				EnglishName = doc.ReadString(br),
-				RelatedBone = doc.ReadIndex(br, PmxIndexKind.Bone),
+				RelatedBone = doc.ReadBone(br),
 				Group = br.ReadByte(),
 				CollidableGroups = (PmdRigidGroups)br.ReadUInt16(),
 				Shape = (PmdRigidShape)br.ReadByte(),
@@ -126,11 +126,11 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			};
 		}
 
-		public void Write(BinaryWriter bw, PmxDocument doc)
+		public void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
 			doc.WriteString(bw, this.Name);
 			doc.WriteString(bw, this.EnglishName);
-			doc.WriteIndex(bw, PmxIndexKind.Bone, this.RelatedBone);
+			cache.Write(this.RelatedBone);
 			bw.Write(this.Group);
 			bw.Write((ushort)this.CollidableGroups);
 			bw.Write((byte)this.Shape);

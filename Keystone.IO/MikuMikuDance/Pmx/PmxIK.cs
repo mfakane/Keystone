@@ -6,7 +6,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 {
 	public class PmxIK
 	{
-		public int TargetBone
+		public PmxBone TargetBone
 		{
 			get;
 			set;
@@ -39,20 +39,20 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 		{
 			return new PmxIK
 			{
-				TargetBone = doc.ReadIndex(br, PmxIndexKind.Bone),
+				TargetBone = doc.ReadBone(br),
 				LoopCount = br.ReadInt32(),
 				AngleLimitUnit = br.ReadSingle(),
 				BindedBones = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxIKBinding.Parse(br, doc)).ToList(),
 			};
 		}
 
-		public void Write(BinaryWriter bw, PmxDocument doc)
+		public void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
 		{
-			doc.WriteIndex(bw, PmxIndexKind.Bone, this.TargetBone);
+			cache.Write(this.TargetBone);
 			bw.Write(this.LoopCount);
 			bw.Write(this.AngleLimitUnit);
 			bw.Write(this.BindedBones.Count);
-			this.BindedBones.ForEach(_ => _.Write(bw, doc));
+			this.BindedBones.ForEach(_ => _.Write(bw, doc, cache));
 		}
 	}
 }
