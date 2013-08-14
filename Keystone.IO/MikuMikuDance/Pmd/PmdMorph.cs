@@ -13,18 +13,19 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
+		public string EnglishName
+		{
+			get;
+			set;
+		}
+
 		public PmdMorphKind Kind
 		{
 			get;
 			set;
 		}
 
-		/// <summary>
-		/// 移動させる頂点のインデックス一覧を取得します。
-		/// これは Kind == None の場合、モデルの頂点インデックスです。
-		/// それ以外の場合、Kind == None の Indices におけるインデックスです。
-		/// </summary>
-		public IList<ushort> Indices
+		public IList<PmdVertex> Indices
 		{
 			get;
 			set;
@@ -38,11 +39,11 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public PmdMorph()
 		{
-			this.Indices = new List<ushort>();
+			this.Indices = new List<PmdVertex>();
 			this.Offsets = new List<float[]>();
 		}
 
-		public static PmdMorph Parse(BinaryReader br)
+		public static PmdMorph Parse(BinaryReader br, PmdDocument doc, PmdMorph morphBase)
 		{
 			var rt = new PmdMorph
 			{
@@ -54,23 +55,41 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 			for (uint i = 0; i < count; i++)
 			{
-				rt.Indices.Add((ushort)br.ReadUInt32());
+				var idx = (ushort)br.ReadUInt32();
+
+				rt.Indices.Add(rt.Kind == PmdMorphKind.None ? doc.Vertices[idx] : morphBase.Indices[idx]);
 				rt.Offsets.Add(new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() });
 			}
 
 			return rt;
 		}
 
-		public void Write(BinaryWriter bw)
+		public void Write(BinaryWriter bw, PmdIndexCache cache, Dictionary<PmdVertex, int> morphBaseIndices)
 		{
 			PmdDocument.WritePmdString(bw, this.Name, 20);
 			bw.Write((uint)this.Offsets.Count);
 			bw.Write((byte)this.Kind);
 			this.Indices.Zip(this.Offsets, Tuple.Create).ForEach(_ =>
 			{
-				bw.Write((uint)_.Item1);
+				if (this.Kind == PmdMorphKind.None)
+					bw.Write((uint)cache.Vertices[_.Item1]);
+				else
+					bw.Write((uint)morphBaseIndices[_.Item1]);
+
 				_.Item2.ForEach(bw.Write);
 			});
+		}
+
+		internal static PmdMorph CreateMorphBase(IEnumerable<PmdMorph> morphs)
+		{
+			var morphBaseIndices = morphs.SelectMany(_ => _.Indices).Distinct().ToList();
+
+			return new PmdMorph
+			{
+				Name = "base",
+				Indices = morphBaseIndices,
+				Offsets = morphBaseIndices.Select(_ => _.Position).ToList(),
+			};
 		}
 	}
 }

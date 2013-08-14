@@ -10,13 +10,19 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
-		public short ParentBone
+		public string EnglishName
 		{
 			get;
 			set;
 		}
 
-		public short ConnectedToOrAssociatedBone
+		public PmdBone ParentBone
+		{
+			get;
+			set;
+		}
+
+		public PmdBone ConnectedToOrAssociatedBone
 		{
 			get;
 			set;
@@ -28,7 +34,13 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
-		public short IKParentBoneOrAssociationRate
+		public PmdBone IKParentOrAffectedBone
+		{
+			get;
+			set;
+		}
+
+		public float AssosiationRate
 		{
 			get;
 			set;
@@ -42,30 +54,33 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public PmdBone()
 		{
-			this.ParentBone = this.ConnectedToOrAssociatedBone = -1;
 			this.Position = new[] { 0f, 0, 0 };
 		}
 
-		public static PmdBone Parse(BinaryReader br)
+		public void Parse(BinaryReader br, PmdDocument doc)
 		{
-			return new PmdBone
-			{
-				Name = PmdDocument.ReadPmdString(br, 20),
-				ParentBone = br.ReadInt16(),
-				ConnectedToOrAssociatedBone = br.ReadInt16(),
-				Kind = (PmdBoneKind)br.ReadByte(),
-				IKParentBoneOrAssociationRate = br.ReadInt16(),
-				Position = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() },
-			};
+			this.Name = PmdDocument.ReadPmdString(br, 20);
+			this.ParentBone = doc.GetBone(br.ReadInt16());
+			this.ConnectedToOrAssociatedBone = doc.GetBone(br.ReadInt16());
+			this.Kind = (PmdBoneKind)br.ReadByte();
+
+			var parentOrRate = br.ReadInt16();
+
+			if (this.Kind == PmdBoneKind.RotationAssociated)
+				this.AssosiationRate = parentOrRate / 100f;
+			else
+				this.IKParentOrAffectedBone = doc.GetBone(parentOrRate);
+
+			this.Position = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
 		}
 
-		public void Write(BinaryWriter bw)
+		public void Write(BinaryWriter bw, PmdIndexCache cache)
 		{
 			PmdDocument.WritePmdString(bw, this.Name, 20);
-			bw.Write(this.ParentBone);
-			bw.Write(this.ConnectedToOrAssociatedBone);
+			bw.Write((short)(this.ParentBone == null ? -1 : cache.Bones[this.ParentBone]));
+			bw.Write((short)(this.ConnectedToOrAssociatedBone == null ? -1 : cache.Bones[this.ConnectedToOrAssociatedBone]));
 			bw.Write((byte)this.Kind);
-			bw.Write(this.IKParentBoneOrAssociationRate);
+			bw.Write((short)(this.Kind == PmdBoneKind.RotationAssociated ? this.AssosiationRate * 100 : this.IKParentOrAffectedBone == null ? -1 : cache.Bones[this.IKParentOrAffectedBone]));
 			this.Position.ForEach(bw.Write);
 		}
 	}

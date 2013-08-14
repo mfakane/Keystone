@@ -6,13 +6,13 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 {
 	public class PmdIK
 	{
-		public short IKBone
+		public PmdBone IKBone
 		{
 			get;
 			set;
 		}
 
-		public short TargetBone
+		public PmdBone TargetBone
 		{
 			get;
 			set;
@@ -30,7 +30,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
-		public IList<short> BindedBones
+		public IList<PmdBone> BindedBones
 		{
 			get;
 			set;
@@ -38,33 +38,33 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		public PmdIK()
 		{
-			this.BindedBones = new List<short>();
+			this.BindedBones = new List<PmdBone>();
 		}
 
-		public static PmdIK Parse(BinaryReader br)
+		public static PmdIK Parse(BinaryReader br, PmdDocument doc)
 		{
 			var rt = new PmdIK
 			{
-				IKBone = br.ReadInt16(),
-				TargetBone = br.ReadInt16(),
+				IKBone = doc.GetBone(br.ReadInt16()),
+				TargetBone = doc.GetBone(br.ReadInt16()),
 			};
 			var bindedBones = br.ReadByte();
 
 			rt.LoopCount = br.ReadUInt16();
 			rt.AngleLimitUnit = br.ReadSingle();
-			rt.BindedBones = Enumerable.Range(0, bindedBones).Select(_ => br.ReadInt16()).ToList();
+			rt.BindedBones = Enumerable.Range(0, bindedBones).Select(_ => doc.GetBone(br.ReadInt16())).ToList();
 
 			return rt;
 		}
 
-		public void Write(BinaryWriter bw)
+		public void Write(BinaryWriter bw, PmdIndexCache cache)
 		{
-			bw.Write(this.IKBone);
-			bw.Write(this.TargetBone);
+			bw.Write((short)(this.IKBone == null ? -1 : cache.Bones[this.IKBone]));
+			bw.Write((short)(this.TargetBone == null ? -1 : cache.Bones[this.TargetBone]));
 			bw.Write((byte)this.BindedBones.Count);
 			bw.Write(this.LoopCount);
 			bw.Write(this.AngleLimitUnit);
-			this.BindedBones.ForEach(bw.Write);
+			this.BindedBones.Select(_ => (short)(_ == null ? -1 : cache.Bones[_])).ForEach(bw.Write);
 		}
 	}
 }

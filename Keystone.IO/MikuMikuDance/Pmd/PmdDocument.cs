@@ -36,7 +36,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
-		public IList<ushort> Indices
+		public IList<PmdVertex> Indices
 		{
 			get;
 			set;
@@ -66,19 +66,13 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			set;
 		}
 
-		public IList<ushort> VisibleMorphs
+		public IList<PmdMorph> MorphDisplayList
 		{
 			get;
 			set;
 		}
 
-		public IList<string> VisibleBoneCategories
-		{
-			get;
-			set;
-		}
-
-		public IDictionary<short, byte> VisibleBones
+		public IList<PmdDisplayList> BoneDisplayList
 		{
 			get;
 			set;
@@ -97,24 +91,6 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 		}
 
 		public string EnglishDescription
-		{
-			get;
-			set;
-		}
-
-		public IList<string> EnglishBoneNames
-		{
-			get;
-			set;
-		}
-
-		public IList<string> EnglishMorphNames
-		{
-			get;
-			set;
-		}
-
-		public IList<string> EnglishVisibleBoneCategories
 		{
 			get;
 			set;
@@ -141,17 +117,13 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 		public PmdDocument()
 		{
 			this.Vertices = new List<PmdVertex>();
-			this.Indices = new List<ushort>();
+			this.Indices = new List<PmdVertex>();
 			this.Materials = new List<PmdMaterial>();
 			this.Bones = new List<PmdBone>();
 			this.IK = new List<PmdIK>();
 			this.Morphs = new List<PmdMorph>();
-			this.VisibleMorphs = new List<ushort>();
-			this.VisibleBoneCategories = new List<string>();
-			this.VisibleBones = new Dictionary<short, byte>();
-			this.EnglishBoneNames = new List<string>();
-			this.EnglishMorphNames = new List<string>();
-			this.EnglishVisibleBoneCategories = new List<string>();
+			this.MorphDisplayList = new List<PmdMorph>();
+			this.BoneDisplayList = new List<PmdDisplayList>();
 			this.ToonFileNames = new List<string>();
 			this.Rigids = new List<PmdRigidBody>();
 			this.Constraints = new List<PmdConstraint>();
@@ -177,37 +149,52 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			rt.Description = ReadPmdString(br, 256);
 
 			for (var i = br.ReadInt32() - 1; i >= 0; i--)
-				rt.Vertices.Add(PmdVertex.Parse(br));
+				rt.Vertices.Add(PmdVertex.Parse(br, rt));
 
 			for (var i = br.ReadInt32() - 1; i >= 0; i--)
-				rt.Indices.Add(br.ReadUInt16());
+				rt.Indices.Add(rt.Vertices[br.ReadUInt16()]);
 
 			for (var i = br.ReadInt32() - 1; i >= 0; i--)
 				rt.Materials.Add(PmdMaterial.Parse(br));
 
-			var bones = br.ReadUInt16();
+			Enumerable.Range(0, br.ReadUInt16()).Select(_ =>
+			{
+				while (rt.Bones.Count <= _)
+					rt.Bones.Add(new PmdBone());
 
-			for (ushort i = 0; i < bones; i++)
-				rt.Bones.Add(PmdBone.Parse(br));
+				return rt.Bones[_];
+			}).ForEach(_ => _.Parse(br, rt));
 
 			for (var i = br.ReadUInt16() - 1; i >= 0; i--)
-				rt.IK.Add(PmdIK.Parse(br));
+				rt.IK.Add(PmdIK.Parse(br, rt));
 
 			var morphs = br.ReadUInt16();
+			PmdMorph morphBase = null;
 
 			for (ushort i = 0; i < morphs; i++)
-				rt.Morphs.Add(PmdMorph.Parse(br));
+			{
+				var m = PmdMorph.Parse(br, rt, morphBase);
+
+				if (m.Kind == PmdMorphKind.None)
+					morphBase = m;
+				else
+					rt.Morphs.Add(m);
+			}
 
 			for (var i = br.ReadByte() - 1; i >= 0; i--)
-				rt.VisibleMorphs.Add(br.ReadUInt16());
+				rt.MorphDisplayList.Add(rt.Morphs[br.ReadUInt16() - 1]);
 
 			var visibleBoneCategories = br.ReadByte();
 
 			for (byte i = 0; i < visibleBoneCategories; i++)
-				rt.VisibleBoneCategories.Add(ReadPmdString(br, 50));
+				rt.BoneDisplayList.Add(PmdDisplayList.Parse(br));
 
 			for (var i = br.ReadInt32() - 1; i >= 0; i--)
-				rt.VisibleBones.Add(br.ReadInt16(), br.ReadByte());
+			{
+				var bone = rt.Bones[br.ReadInt16()];
+
+				rt.BoneDisplayList[br.ReadByte() - 1].Bones.Add(bone);
+			}
 
 			if (br.GetRemainingLength() > 0)
 			{
@@ -218,14 +205,14 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 					rt.EnglishModelName = ReadPmdString(br, 20);
 					rt.EnglishDescription = ReadPmdString(br, 256);
 
-					for (ushort i = 0; i < bones; i++)
-						rt.EnglishBoneNames.Add(ReadPmdString(br, 20));
+					for (ushort i = 0; i < rt.Bones.Count; i++)
+						rt.Bones[i].EnglishName = ReadPmdString(br, 20);
 
 					for (ushort i = 0; i < morphs - 1; i++)
-						rt.EnglishMorphNames.Add(ReadPmdString(br, 20));
+						rt.Morphs[i].EnglishName = ReadPmdString(br, 20);
 
 					for (byte i = 0; i < visibleBoneCategories; i++)
-						rt.EnglishVisibleBoneCategories.Add(ReadPmdString(br, 50));
+						rt.BoneDisplayList[i].EnglishName = ReadPmdString(br, 50);
 				}
 
 				if (br.GetRemainingLength() > 0)
@@ -257,10 +244,19 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			bw.Write(Enumerable.Repeat(padding, Math.Max(count - bytes.Length, 1)).Select((_, idx) => idx == 0 ? (byte)0 : _).ToArray());
 		}
 
+		internal PmdBone GetBone(short idx)
+		{
+			while (this.Bones.Count <= idx)
+				this.Bones.Add(new PmdBone());
+
+			return idx == -1 ? null : this.Bones[idx];
+		}
+
 		public void Write(Stream stream)
 		{
 			// leave open
 			var bw = new BinaryWriter(stream);
+			var cache = new PmdIndexCache(this);
 
 			bw.Write(Encoding.GetBytes("Pmd"));
 			bw.Write(this.Version);
@@ -268,34 +264,39 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			WritePmdString(bw, this.Description, 256);
 
 			bw.Write((uint)this.Vertices.Count);
-			this.Vertices.ForEach(_ => _.Write(bw));
+			this.Vertices.ForEach(_ => _.Write(bw, cache));
 
 			bw.Write((uint)this.Indices.Count);
-			this.Indices.ForEach(bw.Write);
+			this.Indices.Select(_ => (ushort)cache.Vertices[_]).ForEach(bw.Write);
 
 			bw.Write((uint)this.Materials.Count);
 			this.Materials.ForEach(_ => _.Write(bw));
 
 			bw.Write((ushort)this.Bones.Count);
-			this.Bones.ForEach(_ => _.Write(bw));
+			this.Bones.ForEach(_ => _.Write(bw, cache));
 
 			bw.Write((ushort)this.IK.Count);
-			this.IK.ForEach(_ => _.Write(bw));
+			this.IK.ForEach(_ => _.Write(bw, cache));
 
-			bw.Write((ushort)this.Morphs.Count);
-			this.Morphs.ForEach(_ => _.Write(bw));
+			bw.Write((ushort)(this.Morphs.Count + 1));
 
-			bw.Write((byte)this.VisibleMorphs.Count);
-			this.VisibleMorphs.ForEach(_ => bw.Write(_));
+			var morphBase = PmdMorph.CreateMorphBase(this.Morphs);
+			var morphBaseIndices = morphBase.Indices.Select((_, idx) => Tuple.Create(_, idx)).ToDictionary(_ => _.Item1, _ => _.Item2);
 
-			bw.Write((byte)this.VisibleBoneCategories.Count);
-			this.VisibleBoneCategories.ForEach(_ => WritePmdString(bw, _, 50));
+			morphBase.Write(bw, cache, morphBaseIndices);
+			this.Morphs.ForEach(_ => _.Write(bw, cache, morphBaseIndices));
 
-			bw.Write((uint)this.VisibleBones.Count);
-			this.VisibleBones.ForEach(_ =>
+			bw.Write((byte)this.MorphDisplayList.Count);
+			this.MorphDisplayList.Select(_ => this.Morphs.IndexOf(_) + 1).ForEach(_ => bw.Write((short)_));
+
+			bw.Write((byte)this.BoneDisplayList.Count);
+			this.BoneDisplayList.ForEach(_ => _.Write(bw));
+
+			bw.Write((uint)this.BoneDisplayList.Sum(_ => _.Bones.Count));
+			this.BoneDisplayList.SelectMany((_, idx) => _.Bones.Select(b => Tuple.Create(b, idx + 1))).ForEach(_ =>
 			{
-				bw.Write(_.Key);
-				bw.Write(_.Value);
+				bw.Write((short)this.Bones.IndexOf(_.Item1));
+				bw.Write((byte)_.Item2);
 			});
 
 			bw.Write(this.EnglishCompatible);
@@ -304,9 +305,9 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			{
 				WritePmdString(bw, this.EnglishModelName, 20);
 				WritePmdString(bw, this.EnglishDescription, 256);
-				Enumerable.Range(0, this.Bones.Count).Select(_ => _ < this.EnglishBoneNames.Count ? this.EnglishBoneNames[_] : null).ForEach(_ => WritePmdString(bw, _, 20));
-				Enumerable.Range(0, this.Morphs.Count - 1).Select(_ => _ < this.EnglishMorphNames.Count ? this.EnglishMorphNames[_] : null).ForEach(_ => WritePmdString(bw, _, 20));
-				Enumerable.Range(0, this.VisibleBoneCategories.Count).Select(_ => _ < this.EnglishVisibleBoneCategories.Count ? this.EnglishVisibleBoneCategories[_] : null).ForEach(_ => WritePmdString(bw, _, 50));
+				this.Bones.Select(_ => _.EnglishName).ForEach(_ => WritePmdString(bw, _, 20));
+				this.Morphs.Select(_ => _.EnglishName).ForEach(_ => WritePmdString(bw, _, 20));
+				this.BoneDisplayList.Select(_ => _.EnglishName).ForEach(_ => WritePmdString(bw, _, 50));
 			}
 
 			Enumerable.Range(0, 10).Select(_ => _ < this.ToonFileNames.Count ? this.ToonFileNames[_] : null).ForEach(_ => WritePmdString(bw, _, 100));

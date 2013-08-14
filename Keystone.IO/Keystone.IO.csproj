@@ -86,10 +86,12 @@
     <Compile Include="MikuMikuDance\Pmd\PmdBone.cs" />
     <Compile Include="MikuMikuDance\Pmd\PmdBoneKind.cs" />
     <Compile Include="MikuMikuDance\Pmd\PmdConstraint.cs" />
+    <Compile Include="MikuMikuDance\Pmd\PmdDisplayList.cs" />
     <Compile Include="MikuMikuDance\Pmd\PmdDocument.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MikuMikuDance\Pmd\PmdIK.cs" />
+    <Compile Include="MikuMikuDance\Pmd\PmdIndexCache.cs" />
     <Compile Include="MikuMikuDance\Pmd\PmdMaterial.cs" />
     <Compile Include="MikuMikuDance\Pmd\PmdMorph.cs" />
     <Compile Include="MikuMikuDance\Pmd\PmdMorphKind.cs" />
