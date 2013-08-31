@@ -164,6 +164,25 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			var bw = new BinaryWriter(stream);
 			var cache = new PmxIndexCache(this, bw);
 
+			this.Header.VertexIndexSize =
+				cache.Vertices.Count <= byte.MaxValue ? PmxVertexIndexSize.UInt8 :
+				cache.Vertices.Count <= ushort.MaxValue ? PmxVertexIndexSize.UInt16 : PmxVertexIndexSize.Int32;
+			this.Header.MaterialIndexSize =
+				cache.Materials.Count <= sbyte.MaxValue ? PmxIndexSize.Int8 :
+				cache.Materials.Count <= short.MaxValue ? PmxIndexSize.Int16 : PmxIndexSize.Int32;
+			this.Header.TextureIndexSize =
+				cache.Textures.Count <= sbyte.MaxValue ? PmxIndexSize.Int8 :
+				cache.Textures.Count <= short.MaxValue ? PmxIndexSize.Int16 : PmxIndexSize.Int32;
+			this.Header.BoneIndexSize =
+				cache.Bones.Count <= sbyte.MaxValue ? PmxIndexSize.Int8 :
+				cache.Bones.Count <= short.MaxValue ? PmxIndexSize.Int16 : PmxIndexSize.Int32;
+			this.Header.MorphIndexSize =
+				cache.Morphs.Count <= sbyte.MaxValue ? PmxIndexSize.Int8 :
+				cache.Morphs.Count <= short.MaxValue ? PmxIndexSize.Int16 : PmxIndexSize.Int32;
+			this.Header.RigidIndexSize =
+				cache.Rigids.Count <= sbyte.MaxValue ? PmxIndexSize.Int8 :
+				cache.Rigids.Count <= short.MaxValue ? PmxIndexSize.Int16 : PmxIndexSize.Int32;
+
 			bw.Write(Encoding.ASCII.GetBytes("PMX "));
 			bw.Write(this.Version);
 			this.Header.Write(bw);
