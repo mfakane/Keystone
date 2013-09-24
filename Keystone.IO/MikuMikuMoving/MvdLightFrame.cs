@@ -17,7 +17,7 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 			set;
 		}
 
-		public float[] Color
+		public byte[] Color
 		{
 			get;
 			set;
@@ -32,7 +32,7 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 		public MvdLightFrame()
 		{
 			this.Position = new[] { -0.5f, -1, 0.5f };
-			this.Color = new[] { 0.6f, 0.6f, 0.6f };
+			this.Color = new byte[] { 153, 153, 153 };
 			this.Enabled = true;
 		}
 
@@ -42,7 +42,7 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 			{
 				FrameTime = br.ReadInt64(),
 				Position = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() },
-				Color = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() },
+				Color = new[] { br.ReadByte(), br.ReadByte(), br.ReadByte() },
 				Enabled = br.ReadBoolean(),
 			};
 		}
