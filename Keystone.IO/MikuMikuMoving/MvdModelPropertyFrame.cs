@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Linq;
-using Linearstar.Keystone.IO;
 
 namespace Linearstar.Keystone.IO.MikuMikuMoving
 {
@@ -54,7 +53,19 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 			set;
 		}
 
+		public float Scale
+		{
+			get;
+			set;
+		}
+
 		public bool[] IKEnabled
+		{
+			get;
+			set;
+		}
+
+		public MvdModelRelation[] ModelRelation
 		{
 			get;
 			set;
@@ -67,6 +78,7 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 			this.EdgeWidth = 1;
 			this.EdgeColor = new byte[] { 0, 0, 0 };
 			this.IKEnabled = new bool[0];
+			this.ModelRelation = new MvdModelRelation[0];
 		}
 
 		public static MvdModelPropertyFrame Parse(MvdModelPropertyData mpd, BinaryReader br)
@@ -88,7 +100,14 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 
 			rt.EdgeWidth = br.ReadSingle();
 			rt.EdgeColor = new[] { br.ReadByte(), br.ReadByte(), br.ReadByte(), br.ReadByte() };
+
+			if (mpd.MinorType >= 2)
+				rt.Scale = br.ReadSingle();
+
 			rt.IKEnabled = Enumerable.Range(0, mpd.IKBones.Length).Select(_ => br.ReadBoolean()).ToArray();
+
+			if (mpd.MinorType >= 3)
+				rt.ModelRelation = Enumerable.Range(0, mpd.ModelRelationCount).Select(_ => MvdModelRelation.Parse(br)).ToArray();
 
 			return rt;
 		}
@@ -109,7 +128,14 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 
 			bw.Write(this.EdgeWidth);
 			this.EdgeColor.ForEach(bw.Write);
+
+			if (mpd.MinorType >= 2)
+				bw.Write(this.Scale);
+
 			this.IKEnabled.ForEach(bw.Write);
+
+			if (mpd.MinorType >= 3)
+				this.ModelRelation.ForEach(_ => _.Write(bw));
 		}
 	}
 }

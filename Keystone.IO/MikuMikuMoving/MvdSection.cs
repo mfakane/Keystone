@@ -39,7 +39,7 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 			this.Tag = tag;
 		}
 
-		protected virtual void ReadExtensionRegion(MvdDocument document, BinaryReader br)
+		protected virtual void ReadExtensionRegion(MvdDocument document, MvdObject obj, BinaryReader br)
 		{
 		}
 
@@ -47,9 +47,9 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 		{
 		}
 
-		protected abstract void Read(MvdDocument document, BinaryReader br);
+		protected abstract void Read(MvdDocument document, MvdObject obj, BinaryReader br);
 
-		public static MvdSection Parse(MvdDocument document, BinaryReader br)
+		public static MvdSection Parse(MvdDocument document, MvdObject obj, BinaryReader br)
 		{
 			var tag = (MvdTag)br.ReadByte();
 			MvdSection rt = null;
@@ -68,6 +68,14 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 					rt = new MvdMorphData();
 
 					break;
+				case MvdTag.MotionClip:
+					rt = new MvdMotionClipData();
+
+					break;
+				case MvdTag.MotionBlend:
+					rt = new MvdMotionBlendLinkData();
+
+					break;
 				case MvdTag.ModelProperty:
 					rt = new MvdModelPropertyData();
 
@@ -84,6 +92,10 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 					rt = new MvdCameraData();
 
 					break;
+				case MvdTag.CameraProperty:
+					rt = new MvdCameraPropertyData();
+
+					break;
 				case MvdTag.Light:
 					rt = new MvdLightData();
 
@@ -92,7 +104,13 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 					rt = new MvdProjectData();
 
 					break;
+				case MvdTag.Filter:
+					rt = new MvdFilterData();
+
+					break;
 				case MvdTag.Eof:
+					br.ReadByte();
+
 					return null;
 			}
 
@@ -102,9 +120,9 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 			rt.RawCount = br.ReadInt32();
 
 			using (var exr = br.CreateSizedBufferReader())
-				rt.ReadExtensionRegion(document, exr);
+				rt.ReadExtensionRegion(document, obj, exr);
 
-			rt.Read(document, br);
+			rt.Read(document, obj, br);
 
 			return rt;
 		}

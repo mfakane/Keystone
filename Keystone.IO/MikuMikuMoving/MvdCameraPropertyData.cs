@@ -3,28 +3,28 @@ using System.IO;
 
 namespace Linearstar.Keystone.IO.MikuMikuMoving
 {
-	public class MvdAccessoryPropertyData : MvdFixedItemSection
+	public class MvdCameraPropertyData : MvdFixedItemSection
 	{
-		public IList<MvdAccessoryPropertyFrame> Frames
+		public IList<MvdCameraPropertyFrame> Frames
 		{
 			get;
 			set;
 		}
 
-		public MvdAccessoryPropertyData()
-			: base(MvdTag.AccessoryProperty)
+		public MvdCameraPropertyData()
+			: base(MvdTag.CameraProperty)
 		{
-			this.Frames = new List<MvdAccessoryPropertyFrame>();
+			this.Frames = new List<MvdCameraPropertyFrame>();
 		}
 
 		protected override void ReadItem(MvdDocument document, MvdObject obj, BinaryReader br)
 		{
-			this.Frames.Add(MvdAccessoryPropertyFrame.Parse(br));
+			this.Frames.Add(MvdCameraPropertyFrame.Parse(this, br));
 		}
 
 		public override void Write(MvdDocument document, BinaryWriter bw)
 		{
-			this.MinorType = 0;
+			this.MinorType = 2;
 			this.RawCount = this.Frames.Count;
 
 			base.Write(document, bw);
@@ -32,7 +32,7 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 
 		protected override void WriteItem(MvdDocument document, BinaryWriter bw, int index)
 		{
-			this.Frames[index].Write(bw);
+			this.Frames[index].Write(this, bw);
 		}
 	}
 }

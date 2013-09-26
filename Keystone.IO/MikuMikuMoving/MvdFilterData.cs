@@ -3,9 +3,9 @@ using System.IO;
 
 namespace Linearstar.Keystone.IO.MikuMikuMoving
 {
-	public class MvdMorphData : MvdFixedItemSection
+	public class MvdFilterData : MvdFixedItemSection
 	{
-		public IList<MvdMorphFrame> Frames
+		public IList<MvdFilterFrame> Frames
 		{
 			get;
 			set;
@@ -23,38 +23,36 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 			}
 		}
 
-		public int ParentClipId
+		public int ToneCurveControlPointCount
 		{
 			get;
 			set;
 		}
 
-		public MvdMorphData()
-			: base(MvdTag.Morph)
+		public MvdFilterData()
+			: base(MvdTag.Filter)
 		{
-			this.Frames = new List<MvdMorphFrame>();
+			this.Frames = new List<MvdFilterFrame>();
 		}
 
 		protected override void ReadExtensionRegion(MvdDocument document, MvdObject obj, BinaryReader br)
 		{
-			if (this.MinorType >= 1)
-				this.ParentClipId = br.ReadInt32();
+			this.ToneCurveControlPointCount = br.ReadInt32();
 		}
-		
+
 		protected override void ReadItem(MvdDocument document, MvdObject obj, BinaryReader br)
 		{
-			this.Frames.Add(MvdMorphFrame.Parse(br));
+			this.Frames.Add(MvdFilterFrame.Parse(br));
 		}
 
 		protected override void WriteExtensionRegion(MvdDocument document, BinaryWriter bw)
 		{
-			if (this.MinorType >= 1)
-				bw.Write(this.ParentClipId);
+			bw.Write(this.ToneCurveControlPointCount);
 		}
 
 		public override void Write(MvdDocument document, BinaryWriter bw)
 		{
-			this.MinorType = 1;
+			this.MinorType = 2;
 			this.RawCount = this.Frames.Count;
 
 			base.Write(document, bw);

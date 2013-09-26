@@ -17,7 +17,7 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 			this.Names = new Dictionary<int, string>();
 		}
 
-		protected override void Read(MvdDocument document, BinaryReader br)
+		protected override void Read(MvdDocument document, MvdObject obj, BinaryReader br)
 		{
 			for (int i = 0; i < this.RawCount; i++)
 				this.Names.Add(br.ReadInt32(), document.Encoding.GetString(br.ReadSizedBuffer()));

@@ -17,7 +17,7 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 			this.Frames = new List<MvdLightFrame>();
 		}
 
-		protected override void ReadItem(MvdDocument document, BinaryReader br)
+		protected override void ReadItem(MvdDocument document, MvdObject obj, BinaryReader br)
 		{
 			this.Frames.Add(MvdLightFrame.Parse(br));
 		}

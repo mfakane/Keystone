@@ -11,21 +11,21 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 		{
 		}
 
-		protected abstract void ReadItem(MvdDocument document, BinaryReader br);
+		protected abstract void ReadItem(MvdDocument document, MvdObject obj, BinaryReader br);
 		protected abstract void WriteItem(MvdDocument document, BinaryWriter bw, int index);
 
 		protected virtual void BeforeWriteHeader(MvdDocument document, BinaryWriter bw)
 		{
 		}
 
-		protected override void Read(MvdDocument document, BinaryReader br)
+		protected override void Read(MvdDocument document, MvdObject obj, BinaryReader br)
 		{
 			if (this.RawItemSize <= 0)
 				throw new InvalidOperationException("RawItemSize must be greater than 0.");
 
 			for (int i = 0; i < this.RawCount; i++)
 				using (var ir = new BinaryReader(new MemoryStream(br.ReadBytes(this.RawItemSize))))
-					ReadItem(document, ir);
+					ReadItem(document, obj, ir);
 		}
 
 		public override void Write(MvdDocument document, BinaryWriter bw)

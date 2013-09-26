@@ -53,6 +53,12 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 			set;
 		}
 
+		public bool Spline
+		{
+			get;
+			set;
+		}
+
 		public MvdBoneFrame()
 		{
 			this.Position = new[] { 0f, 0, 0 };
@@ -63,9 +69,9 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 			this.RotationInterpolation = new[] { MvdInterpolationPoint.DefaultA, MvdInterpolationPoint.DefaultB };
 		}
 
-		public static MvdBoneFrame Parse(BinaryReader br)
+		public static MvdBoneFrame Parse(MvdBoneData bd, BinaryReader br)
 		{
-			return new MvdBoneFrame
+			var rt = new MvdBoneFrame
 			{
 				StageId = br.ReadInt32(),
 				FrameTime = br.ReadInt64(),
@@ -76,9 +82,17 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 				ZInterpolation = new[] { MvdInterpolationPoint.Parse(br), MvdInterpolationPoint.Parse(br) },
 				RotationInterpolation = new[] { MvdInterpolationPoint.Parse(br), MvdInterpolationPoint.Parse(br) },
 			};
+
+			if (bd.MinorType >= 1)
+			{
+				rt.Spline = br.ReadBoolean();
+				br.ReadBytes(3);
+			}
+
+			return rt;
 		}
 
-		public void Write(BinaryWriter bw)
+		public void Write(MvdBoneData bd, BinaryWriter bw)
 		{
 			bw.Write(this.StageId);
 			bw.Write(this.FrameTime);
@@ -88,6 +102,12 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 			this.YInterpolation.ForEach(_ => _.Write(bw));
 			this.ZInterpolation.ForEach(_ => _.Write(bw));
 			this.RotationInterpolation.ForEach(_ => _.Write(bw));
+
+			if (bd.MinorType >= 1)
+			{
+				bw.Write(this.Spline);
+				bw.Write(new byte[] { 0, 0, 0 });
+			}
 		}
 
 		public string GetName(MvdNameList names, MvdBoneData boneData)

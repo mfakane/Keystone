@@ -26,13 +26,13 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 			this.Parameters = new List<MvdEffectParameter>();
 		}
 
-		protected override void ReadExtensionRegion(MvdDocument document, BinaryReader br)
+		protected override void ReadExtensionRegion(MvdDocument document, MvdObject obj, BinaryReader br)
 		{
 			if (br.GetRemainingLength() >= 4)
 				this.Parameters = Enumerable.Range(0, br.ReadInt32()).Select(_ => MvdEffectParameter.Parse(br)).ToList();
 		}
 
-		protected override void ReadItem(MvdDocument document, BinaryReader br)
+		protected override void ReadItem(MvdDocument document, MvdObject obj, BinaryReader br)
 		{
 			this.Frames.Add(MvdEffectPropertyFrame.Parse(this, br));
 		}

@@ -27,19 +27,7 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 			set;
 		}
 
-		public string ObjectName
-		{
-			get;
-			set;
-		}
-
-		public float KeyFps
-		{
-			get;
-			set;
-		}
-
-		public IList<MvdSection> Sections
+		public IList<MvdObject> Objects
 		{
 			get;
 			set;
@@ -47,7 +35,7 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 
 		public MvdDocument()
 		{
-			this.Sections = new List<MvdSection>();
+			this.Objects = new List<MvdObject>();
 		}
 
 		public static MvdDocument Parse(Stream stream)
@@ -80,20 +68,8 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 					break;
 			}
 
-			rt.ObjectName = rt.Encoding.GetString(br.ReadSizedBuffer());
-			br.ReadSizedBuffer();	// objectNameSize2 / objectName2
-			rt.KeyFps = br.ReadSingle();
-			br.ReadSizedBuffer();	// reservedSize / reserved
-
 			while (br.GetRemainingLength() > 1)
-			{
-				var section = MvdSection.Parse(rt, br);
-
-				if (section == null)
-					break;
-
-				rt.Sections.Add(section);
-			}
+				rt.Objects.Add(MvdObject.Parse(rt, br));
 
 			return rt;
 		}
@@ -114,16 +90,8 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 			bw.Write(this.Version);
 			bw.Write((byte)(this.Encoding.CodePage == Encoding.Unicode.CodePage ? 0 : 1));
 
-			bw.WriteSizedBuffer(this.Encoding.GetBytes(this.ObjectName));
-			bw.WriteSizedBuffer(this.Encoding.GetBytes(this.ObjectName));
-			bw.Write(this.KeyFps);
-			bw.WriteSizedBuffer(new byte[0]);
-
-			foreach (var i in this.Sections)
+			foreach (var i in this.Objects)
 				i.Write(this, bw);
-
-			bw.Write((byte)MvdTag.Eof);
-			bw.Write((byte)0);
 		}
 	}
 }

@@ -10,12 +10,16 @@ typedef enum
 	NAMELIST_ID = 0,
 	BONE_ID = 16,
 	MORPH_ID = 32,
+	MOTIONCLIP_ID = 40,
+	MOTIONBLEND_ID = 48,
 	MODELPROPERTY_ID = 64,
 	ACCESSORYPROPERTY_ID = 80,
 	EFFECTPROPERTY_ID = 88,
 	CAMERA_ID = 96,
+	CAMERAPROPERTY_ID = 104,
 	LIGHT_ID = 112,
 	PROJECT_ID = 128,
+	FILTER_ID = 136,
 	EOF_ID = 255,
 } Tag;
 
@@ -40,8 +44,8 @@ struct Format
 	int objectNameSize;
 	char objectName[objectNameSize];	// UTF-16 or UTF-8 string
 
-	int objectNameSize2;
-	char objectName2[objectNameSize2];	// UTF-16 or UTF-8 string
+	int englishObjectNameSize;
+	char englishObjectName[englishObjectNameSize];	// UTF-16 or UTF-8 string
 	float keyFps;
 	int reservedSize;
 	char reserved[reservedSize];		// maybe zero
@@ -58,11 +62,15 @@ struct Section
 		NameList nameList;								// type == NAMELIST_ID
 		BoneData boneData;								// type == BONE_ID
 		MorphData morphData;							// type == MORPH_ID
+		MotionClipData motionClipData;					// type == MOTIONCLIP_ID
+		MotionBlendLinkData motionBlendLinkData;		// type == MOTIONBLEND_ID
 		ModelPropertyData modelPropertyData;			// type == MODELPROPERTY_ID
 		AccessoryPropertyData accessoryPropertyData;	// type == ACCESSORYPROPERTY_ID
 		EffectPropertyData effectPropertyData;			// type == EFFECTPROPERTY_ID
 		CameraData cameraData;							// type == CAMERA_ID
+		CameraPropertyData cameraPropertyData;			// type == CAMERAPROPERTY_ID
 		LightData lightData;							// type == LIGHT_ID
+		FilterData filterData;							// type == FILTER_ID
 		ProjectData projectData;						// type == PROJECT_ID
 	}
 }
@@ -95,8 +103,9 @@ struct BoneData
 	int key;
 	int itemSize;
 	int count;
-	int stageCountSize;
-	char stageCount[stageCountSize];		// maybe zero, converted to be int
+	int reservedSize;					// Section.minorType >= 2 then 8, else 4
+	int stageCount;
+	int parentClipId;
 	BoneFrame frames[count];
 }
 
@@ -107,7 +116,11 @@ struct BoneFrame
 	float position[3];
 	float quaternion[4];					// X, Y, Z, W
 	InterpolationPoint interpolation[8];	// XA, XB, YA, YB, ZA, ZB, RA, RB
-	char reserved[BoneData.itemSize - 56];
+	
+	// if (Section.minorType >= 1) {
+	bool spline;
+	char reserved[3];
+	// }
 }
 
 struct MorphData
@@ -128,6 +141,54 @@ struct MorphFrame
 	char reserved[MorphData.itemSize - 16];
 }
 
+struct MotionClipData
+{
+	int key;
+	int itemSize;
+	int count;						// 1
+	int reservedSize;				// 4
+	int parentClipId;
+	MotionClip clip;
+}
+
+struct MotionClip
+{
+	int trackIndex;
+	float frameStart;
+	float frameLength;
+	int repeatCount;
+	float weight;
+	float scale;
+	int timeWarpSplineType;
+	int timeWarpPointCount;
+	TimeWarpPoint timeWarpPoints[timeWarpPointCount];
+}
+
+struct TimeWarpPoint
+{
+	float x;
+	float y;
+}
+
+struct MotionBlendLinkData
+{
+	int key;
+	int itemSize;
+	int count;						// 1
+	int reservedSize;				// 4
+	int parentClipId;
+	MotionBlendLink motionBlendLink;
+}
+
+struct MotionBlendLink
+{
+	int clipAId;
+	int clipBId;
+	int splineType;
+	int blendPointCount;
+	TimeWarpPoint blendPoints[blendPointCount];
+}
+
 struct ModelPropertyData
 {
 	int reserved;
@@ -140,6 +201,9 @@ struct ModelPropertyData
 	int ikCount;
 	int ikBones[ikCount];
 	char reserved2[ikSize - 4 * (ikCount + 1)];		// maybe zero
+	// }
+	// if (Section.minorType >= 3) {
+	int modelRelationCount;
 	// }
 
 	ModelPropertyFrame frames[count];
@@ -160,8 +224,20 @@ struct ModelPropertyFrame
 
 	float edgeWidth;
 	char edgeColor[4];		// argb
+	// if (Section.minorType >= 2) {
+	float scale;
+	// }
 	bool ikEnabled[ModelPropertyData.ikCount];
-	char reserved[ModelPropertyData.itemSize - (20 + ModelPropertyData.ikCount)];
+	// if (Section.minorType >= 3) {
+	ModelRelation modelRelation[ModelPropertyData.modelRelationCount];
+	// }
+}
+
+struct ModelRelation
+{
+	int externalParentKey;
+	int relatedModelId;
+	int relatedBoneId;
 }
 
 struct AccessoryPropertyData
@@ -245,7 +321,7 @@ struct EffectParameterData
 
 struct CameraData
 {
-	int reserved;
+	int id;
 	int itemSize;
 	int count;
 	int stageCountSize;
@@ -261,9 +337,53 @@ struct CameraFrame
 	float position[3];
 	float rotate[3];						// X, Y, Z euler radians
 	float fov;								// radians
+	// if (Section.minorType == 0) {
 	bool perspective;
+	// }
+	// if (Section.minorType == 1) {
+	bool enabled;
+	bool perspective;
+	float alpha;
+	bool effectEnabled;
+	// }
+	// if (Section.minorType == 3) {
+	bool spline;
+	char reserved[3];
+	// }
 	InterpolationPoint interpolation[8];	// MoveA, MoveB, RotateA, RotateB, DistA, DistB, FovA, FovB
 	char reserved[MorphData.itemSize - 61];
+}
+
+struct CameraPropertyData
+{
+	int reserved;
+	int itemSize;
+	int count;
+	int reserved2Size;
+	char reserved2[reserved2Size];		// maybe zero
+	CameraPropertyFrame frames[count];
+}
+
+struct CameraPropertyFrame
+{
+	long frameTime;
+	bool enabled;
+	bool perspective;
+	float alpha;
+	bool effectEnabled;
+
+	// if (Section.minorType == 0) {
+	char reserved;
+	// }
+	// if (Section.minorType >= 1) {
+	bool dynamicFov;
+	float dynamicFovRate;
+	float dynamicFovCoefficent;
+	// }
+	// if (Section.minorType >= 2) {
+	int relatedModelId;
+	int relatedBoneId;
+	// }
 }
 
 struct LightData
@@ -283,6 +403,29 @@ struct LightFrame
 	float color[3];
 	bool enabled;
 	char reserved[LightData.itemSize - 24];
+}
+
+struct FilterData
+{
+	int reserved;
+	int itemSize;
+	int count;
+	int reservedSize;				// 4
+	int toneCurveControlPointCount;
+	FilterFrame frames[count];
+}
+
+struct FilterFrame
+{
+	long frameTime;
+	int filterType;
+	bool interpolation;
+	char reserved[3];
+	float fadeColor[3];
+	float fadeValue;
+	float hsvValue[3];
+	int toneCurveControlPointCount;
+	TimeWarpPoint toneCurveControlPoints[toneCurveControlPointCount];
 }
 
 struct ProjectData
