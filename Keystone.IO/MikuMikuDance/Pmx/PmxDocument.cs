@@ -307,7 +307,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 
 		internal void WriteString(BinaryWriter bw, string value)
 		{
-			bw.WriteSizedBuffer(this.Header.Encoding.GetBytes(value));
+			bw.WriteSizedBuffer(value == null ? new byte[0] : this.Header.Encoding.GetBytes(value));
 		}
 
 		internal int ReadIndex(BinaryReader br, PmxIndexKind kind)
