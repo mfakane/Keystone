@@ -6,6 +6,8 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 {
 	public abstract class MvdFixedItemSection : MvdSection
 	{
+        protected virtual bool IgnoreRawItemSize => false;
+
 		public MvdFixedItemSection(MvdTag tag)
 			: base(tag)
 		{
@@ -24,9 +26,14 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 				throw new InvalidOperationException("RawItemSize must be greater than 0.");
 
 			for (int i = 0; i < this.RawCount; i++)
-				using (var ir = new BinaryReader(new MemoryStream(br.ReadBytes(this.RawItemSize))))
-					ReadItem(document, obj, ir);
-		}
+                if (this.IgnoreRawItemSize)
+                    ReadItem(document, obj, br);
+                else
+                {
+                    using (var ir = new BinaryReader(new MemoryStream(br.ReadBytes(this.RawItemSize))))
+                    	ReadItem(document, obj, ir);
+                }
+        }
 
 		public override void Write(MvdDocument document, BinaryWriter bw)
 		{

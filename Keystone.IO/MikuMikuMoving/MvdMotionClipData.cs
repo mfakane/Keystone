@@ -8,7 +8,10 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 {
 	public class MvdMotionClipData : MvdFixedItemSection
 	{
-		public int Key
+        // MMM が RawItemSize と実際の 1 項目ごとの長さが一致しないファイルを吐くので、RawItemSize を信用してはいけない
+        protected override bool IgnoreRawItemSize => true;
+
+        public int Key
 		{
 			get
 			{
@@ -49,6 +52,7 @@ namespace Linearstar.Keystone.IO.MikuMikuMoving
 		protected override void ReadExtensionRegion(MvdDocument document, MvdObject obj, BinaryReader br)
 		{
 			this.ParentClipId = br.ReadInt32();
+            br.ReadInt32();
 		}
 
 		protected override void ReadItem(MvdDocument document, MvdObject obj, BinaryReader br)
