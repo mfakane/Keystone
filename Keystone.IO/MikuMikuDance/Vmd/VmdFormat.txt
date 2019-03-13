@@ -26,6 +26,11 @@ struct Format
 	DWORD selfShadowFrameCount;
 	SelfShadowFrame selfShadowFrames[selfShadowFrameCount];
 	// }
+	
+	// if (mmd_version > 7.39) {
+	DWORD propertyFrameCount;
+	PropertyFrame propertyFrames[propertyFrameCount];
+	// }
 }
 
 struct BoneFrame
