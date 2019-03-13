@@ -28,23 +28,23 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 					break;
 				case PmxMorphKind.UV:
 					rt = new PmxUVMorphOffset();
-				
+
 					break;
 				case PmxMorphKind.AdditionalUV1:
 					rt = new PmxUVMorphOffset();
-				
+
 					break;
 				case PmxMorphKind.AdditionalUV2:
 					rt = new PmxUVMorphOffset();
-				
+
 					break;
 				case PmxMorphKind.AdditionalUV3:
 					rt = new PmxUVMorphOffset();
-				
+
 					break;
 				case PmxMorphKind.AdditionalUV4:
 					rt = new PmxUVMorphOffset();
-					
+
 					break;
 				case PmxMorphKind.Material:
 					rt = new PmxMaterialMorphOffset();
@@ -269,15 +269,33 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 		}
 
 		public PmxMaterialMorphOffset()
+			: this(true)
 		{
-			this.Diffuse = new[] { 1f, 1, 1, 1 };
-			this.Specular = new[] { 1f, 1, 1 };
-			this.Ambient = new[] { 1f, 1, 1 };
-			this.EdgeColor = new[] { 1f, 1, 1, 1 };
-			this.EdgeSize = 1;
-			this.Texture = new[] { 1f, 1, 1, 1 };
-			this.SubTexture = new[] { 1f, 1, 1, 1 };
-			this.ToonTexture = new[] { 1f, 1, 1, 1 };
+		}
+
+		public PmxMaterialMorphOffset(bool initializeWithOne)
+		{
+			if (initializeWithOne)
+			{
+				this.Diffuse = new[] { 1f, 1, 1, 1 };
+				this.Specular = new[] { 1f, 1, 1 };
+				this.Ambient = new[] { 1f, 1, 1 };
+				this.EdgeColor = new[] { 1f, 1, 1, 1 };
+				this.EdgeSize = 1;
+				this.Texture = new[] { 1f, 1, 1, 1 };
+				this.SubTexture = new[] { 1f, 1, 1, 1 };
+				this.ToonTexture = new[] { 1f, 1, 1, 1 };
+			}
+			else
+			{
+				this.Diffuse = new[] { 0f, 0, 0, 0 };
+				this.Specular = new[] { 0f, 0, 0 };
+				this.Ambient = new[] { 0f, 0, 0 };
+				this.EdgeColor = new[] { 0f, 0, 0, 0 };
+				this.Texture = new[] { 0f, 0, 0, 0 };
+				this.SubTexture = new[] { 0f, 0, 0, 0 };
+				this.ToonTexture = new[] { 0f, 0, 0, 0 };
+			}
 		}
 
 		public override void Read(BinaryReader br, PmxDocument doc)
