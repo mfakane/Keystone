@@ -2,44 +2,19 @@
 using System.Linq;
 using System.Text;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Osm
 {
 	public class OsmIK
 	{
-		public int IKBone
-		{
-			get;
-			set;
-		}
+		public int IKBone { get; set; }
 
-		public int TargetBone
-		{
-			get;
-			set;
-		}
+		public int TargetBone { get; set; }
 
-		public int LoopCount
-		{
-			get;
-			set;
-		}
+		public int LoopCount { get; set; }
 
-		public float AngleLimitUnit
-		{
-			get;
-			set;
-		}
+		public float AngleLimitUnit { get; set; }
 
-		public IList<int> BindedBones
-		{
-			get;
-			set;
-		}
-
-		public OsmIK()
-		{
-			this.BindedBones = new List<int>();
-		}
+		public IList<int> BindedBones { get; set; } = new List<int>();
 
 		public static OsmIK Parse(IEnumerable<string> block)
 		{

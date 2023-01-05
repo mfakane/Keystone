@@ -1,30 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Pmd
 {
-	public class PmdIndexCache
-	{
-		readonly PmdDocument doc;
+    class PmdIndexCache
+    {
+        readonly Dictionary<PmdVertex, uint> vertices;
+        readonly Dictionary<PmdBone, short> bones;
 
-		public Dictionary<PmdVertex, int> Vertices
-		{
-			get;
-			private set;
-		}
+        public uint this[PmdVertex? vertex] =>
+            vertex is null ? unchecked((uint)-1) : vertices[vertex];
 
-		public Dictionary<PmdBone, int> Bones
-		{
-			get;
-			private set;
-		}
+        public short this[PmdBone? bone] =>
+            bone is null ? (short)-1 : bones[bone];
 
-		public PmdIndexCache(PmdDocument doc)
-		{
-			this.doc = doc;
-			this.Vertices = doc.Vertices.Select((i, j) => Tuple.Create(i, j)).ToDictionary(_ => _.Item1, _ => _.Item2);
-			this.Bones = doc.Bones.Select((i, j) => Tuple.Create(i, j)).ToDictionary(_ => _.Item1, _ => _.Item2);
-		}
-	}
+        public PmdIndexCache(PmdDocument doc)
+        {
+            vertices = doc.Vertices.Select((x, i) => new { Item = x, Index = (uint)i })
+                .ToDictionary(x => x.Item, x => x.Index);
+            bones = doc.Bones.Select((x, i) => new { Item = x, Index = (short)i })
+                .ToDictionary(x => x.Item, x => x.Index);
+        }
+    }
 }

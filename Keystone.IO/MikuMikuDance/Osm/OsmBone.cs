@@ -1,56 +1,29 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Osm
 {
 	public class OsmBone
 	{
-		public string Name
-		{
-			get;
-			set;
-		}
+		public string Name { get; set; } = "名前";
 
-		public int ParentBone
-		{
-			get;
-			set;
-		}
+		public int ParentBone { get; set; }
 
-		public int ConnectToBone
-		{
-			get;
-			set;
-		}
+		public int ConnectToBone { get; set; }
 
-		public OsmBoneKind Kind
-		{
-			get;
-			set;
-		}
-
-		public int AffectedBone
-		{
-			get;
-			set;
-		}
-
-		public float[] Position
-		{
-			get;
-			set;
-		}
-
-		public OsmBone()
-		{
-			this.Position = new[] { 0f, 0, 0 };
-		}
+		public OsmBoneKind Kind { get; set; }
+		
+		public int AffectedBone { get; set; }
+		
+		public Vector3 Position { get; set; }
 
 		public static OsmBone Parse(IEnumerable<string> block)
 		{
 			var sl = block.Select(_ => _.Trim().Split(new[] { ';' }, 2).First()).ToArray();
 			var tkk = sl[2].Split(',');
+			var fl = sl[3].Split(',').Select(float.Parse).ToArray();
 
 			return new OsmBone
 			{
@@ -59,7 +32,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 				ConnectToBone = int.Parse(tkk[0]),
 				Kind = (OsmBoneKind)int.Parse(tkk[1]),
 				AffectedBone = int.Parse(tkk[2]),
-				Position = sl[3].Split(',').Select(float.Parse).ToArray(),
+				Position = new Vector3(fl[0], fl[1], fl[2]),
 			};
 		}
 
@@ -85,7 +58,7 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			sl.AppendLine(";\t\t\t\t\t\t// To,kind,knum");
 
 			sl.Append("  ");
-			sl.Append(string.Join(",", this.Position.Select(_ => _.ToString("0.000000"))));
+			sl.Append($"{this.Position.X:0.000000},{this.Position.Y:0.000000},{this.Position.Z:0.000000}");
 			sl.AppendLine(";\t\t// Position");
 
 			sl.Append(" }");

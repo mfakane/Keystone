@@ -1,10 +1,9 @@
-﻿using System;
+﻿using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Xx
 {
 	/// <summary>
 	/// XX file created by Higuchi_U
@@ -13,81 +12,70 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 	{
 		public const string DisplayName = "XX file";
 		public const string Filter = "*.xx";
-		public static readonly Encoding Encoding = Encoding.GetEncoding(932);
+		
+		internal static Encoding Encoding => Encoding.GetEncoding(932);
+		internal const int StringCapacity = 256;
 
-		public IList<XxVertex> Vertices
+		public IList<XxVertex> Vertices { get; set; } = new List<XxVertex>();
+
+		public IList<XxLine> Lines { get; set; } = new List<XxLine>();
+
+		public IList<XxMaterial> Materials { get; set; } = new List<XxMaterial>();
+		
+		static XxDocument()
 		{
-			get;
-			set;
+			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+		}
+		
+		public static XxDocument FromFile(string path)
+		{
+			using var fs = File.OpenRead(path);
+
+			return Parse(fs);
 		}
 
-		public IList<XxLine> Lines
-		{
-			get;
-			set;
-		}
-
-		public IList<XxMaterial> Materials
-		{
-			get;
-			set;
-		}
-
-		public XxDocument()
-		{
-			this.Vertices = new List<XxVertex>();
-			this.Lines = new List<XxLine>();
-			this.Materials = new List<XxMaterial>();
-		}
-
-		public static XxDocument Parse(Stream stream)
+		public static XxDocument Parse(in ReadOnlySequence<byte> sequence)
 		{
 			var rt = new XxDocument();
-
-			// leave open
-			var br = new BinaryReader(stream);
+			var br = new BufferReader(sequence);
+			
 			var vertices = br.ReadUInt32();
-
 			for (uint i = 0; i < vertices; i++)
-				rt.Vertices.Add(XxVertex.Parse(br));
+				rt.Vertices.Add(XxVertex.Parse(ref br));
 
 			var lines = br.ReadUInt32();
-
 			for (uint i = 0; i < lines; i++)
-				rt.Lines.Add(XxLine.Parse(br));
+				rt.Lines.Add(XxLine.Parse(ref br));
 
 			var materials = br.ReadUInt32();
-
 			for (uint i = 0; i < materials; i++)
-				rt.Materials.Add(XxMaterial.Parse(br));
+				rt.Materials.Add(XxMaterial.Parse(ref br));
 
 			return rt;
 		}
 
-		internal static string ReadXxString(BinaryReader br, int count)
+		public static XxDocument Parse(Stream stream) =>
+			Parse(stream.AsReadOnlySequence());
+		
+		public void Write(IBufferWriter<byte> writer)
 		{
-			return Encoding.GetString(br.ReadBytes(count).TakeWhile(_ => _ != '\0').ToArray());
+			var bw = new BufferWriter(writer);
+
+			bw.Write(this.Vertices.Count);
+			foreach (var vertex in this.Vertices) vertex.Write(ref bw);
+			
+			bw.Write(this.Lines.Count);
+			foreach (var line in this.Lines) line.Write(ref bw);
+			
+			bw.Write(this.Materials.Count);
+			foreach (var material in this.Materials) material.Write(ref bw);
 		}
-
-		internal static void WriteXxString(BinaryWriter bw, string s, int count, byte padding = 0xFD)
-		{
-			var bytes = Encoding.GetBytes(s);
-
-			bw.Write(bytes.Take(count - 1).ToArray());
-			bw.Write(Enumerable.Repeat(padding, Math.Max(count - bytes.Length, 1)).Select((_, idx) => idx == 0 ? (byte)0 : _).ToArray());
-		}
-
+		
 		public void Write(Stream stream)
 		{
-			// leave open
-			var bw = new BinaryWriter(stream);
+			using var sbw = new StreamBufferWriter(stream);
 
-			bw.Write((uint)this.Vertices.Count);
-			this.Vertices.ForEach(_ => _.Write(bw));
-			bw.Write((uint)this.Lines.Count);
-			this.Lines.ForEach(_ => _.Write(bw));
-			bw.Write((uint)this.Materials.Count);
-			this.Materials.ForEach(_ => _.Write(bw));
+			Write(sbw);
 		}
 	}
 }

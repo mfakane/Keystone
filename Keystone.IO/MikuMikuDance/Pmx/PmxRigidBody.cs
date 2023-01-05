@@ -1,148 +1,80 @@
-﻿using System.IO;
+﻿using System.Numerics;
+using Linearstar.Keystone.IO.MikuMikuDance.Pmd;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Pmx
 {
-	public class PmxRigidBody
-	{
-		public string Name
-		{
-			get;
-			set;
-		}
+    public class PmxRigidBody
+    {
+        public string Name { get; set; }
 
-		public string EnglishName
-		{
-			get;
-			set;
-		}
+        public string EnglishName { get; set; }
 
-		public PmxBone RelatedBone
-		{
-			get;
-			set;
-		}
+        public PmxBone? RelatedBone { get; set; }
 
-		public byte Group
-		{
-			get;
-			set;
-		}
+        public byte Group { get; set; }
 
-		public PmdRigidGroups CollidableGroups
-		{
-			get;
-			set;
-		}
+        public PmdRigidGroups CollidableGroups { get; set; }
 
-		public PmdRigidShape Shape
-		{
-			get;
-			set;
-		}
+        public PmdRigidShape Shape { get; set; }
 
-		public float[] Size
-		{
-			get;
-			set;
-		}
+        public Vector3 Size { get; set; }
 
-		public float[] Position
-		{
-			get;
-			set;
-		}
+        public Vector3 Position { get; set; }
 
-		/// <summary>
-		/// radians
-		/// </summary>
-		public float[] Rotation
-		{
-			get;
-			set;
-		}
+        /// <summary>
+        /// radians
+        /// </summary>
+        public Vector3 Rotation { get; set; }
 
-		public float Mass
-		{
-			get;
-			set;
-		}
+        public float Mass { get; set; }
 
-		public float LinearDamping
-		{
-			get;
-			set;
-		}
+        public float LinearDamping { get; set; }
 
-		public float AngularDamping
-		{
-			get;
-			set;
-		}
+        public float AngularDamping { get; set; }
 
-		public float Restitution
-		{
-			get;
-			set;
-		}
+        public float Restitution { get; set; }
 
-		public float Friction
-		{
-			get;
-			set;
-		}
+        public float Friction { get; set; }
 
-		public PmxRigidKind Kind
-		{
-			get;
-			set;
-		}
+        public PmxRigidKind Kind { get; set; }
 
-		public PmxRigidBody()
-		{
-			this.Size = new[] { 0f, 0, 0 };
-			this.Position = new[] { 0f, 0, 0 };
-			this.Rotation = new[] { 0f, 0, 0 };
-		}
+        internal static PmxRigidBody Parse(ref BufferReader br, PmxDocument doc) =>
+            new()
+            {
+                Name = br.ReadString(doc.Header),
+                EnglishName = br.ReadString(doc.Header),
+                RelatedBone = doc.ReadBone(ref br),
+                Group = br.ReadByte(),
+                CollidableGroups = (PmdRigidGroups)br.ReadUInt16(),
+                Shape = (PmdRigidShape)br.ReadByte(),
+                Size = br.ReadVector3(),
+                Position = br.ReadVector3(),
+                Rotation = br.ReadVector3(),
+                Mass = br.ReadSingle(),
+                LinearDamping = br.ReadSingle(),
+                AngularDamping = br.ReadSingle(),
+                Restitution = br.ReadSingle(),
+                Friction = br.ReadSingle(),
+                Kind = (PmxRigidKind)br.ReadByte(),
+            };
 
-		public static PmxRigidBody Parse(BinaryReader br, PmxDocument doc)
-		{
-			return new PmxRigidBody
-			{
-				Name = doc.ReadString(br),
-				EnglishName = doc.ReadString(br),
-				RelatedBone = doc.ReadBone(br),
-				Group = br.ReadByte(),
-				CollidableGroups = (PmdRigidGroups)br.ReadUInt16(),
-				Shape = (PmdRigidShape)br.ReadByte(),
-				Size = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() },
-				Position = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() },
-				Rotation = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() },
-				Mass = br.ReadSingle(),
-				LinearDamping = br.ReadSingle(),
-				AngularDamping = br.ReadSingle(),
-				Restitution = br.ReadSingle(),
-				Friction = br.ReadSingle(),
-				Kind = (PmxRigidKind)br.ReadByte(),
-			};
-		}
-
-		public void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
-		{
-			doc.WriteString(bw, this.Name);
-			doc.WriteString(bw, this.EnglishName);
-			cache.Write(this.RelatedBone);
-			bw.Write(this.Group);
-			bw.Write((ushort)this.CollidableGroups);
-			bw.Write((byte)this.Shape);
-			this.Size.ForEach(bw.Write);
-			this.Position.ForEach(bw.Write);
-			this.Rotation.ForEach(bw.Write);
-			bw.Write(this.Mass);
-			bw.Write(this.LinearDamping);
-			bw.Write(this.AngularDamping);
-			bw.Write(this.Restitution);
-			bw.Write(this.Friction);
-			bw.Write((byte)this.Kind);
-		}
-	}
+        internal void Write(ref BufferWriter bw, PmxDocument doc, PmxIndexCache cache)
+        {
+            bw.Write(this.Name, doc.Header);
+            bw.Write(this.EnglishName, doc.Header);
+            bw.Write(this.RelatedBone, cache);
+            bw.Write(this.Group);
+            bw.Write((ushort)this.CollidableGroups);
+            bw.Write((byte)this.Shape);
+            bw.Write(this.Size);
+            bw.Write(this.Position);
+            bw.Write(this.Rotation);
+            bw.Write(this.Mass);
+            bw.Write(this.LinearDamping);
+            bw.Write(this.AngularDamping);
+            bw.Write(this.Restitution);
+            bw.Write(this.Friction);
+            bw.Write((byte)this.Kind);
+        }
+    }
 }

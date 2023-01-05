@@ -1,50 +1,30 @@
-﻿using System.IO;
-
-namespace Linearstar.Keystone.IO.MikuMikuDance
+﻿namespace Linearstar.Keystone.IO.MikuMikuDance.Pmx
 {
-	public class PmxModelInformation
-	{
-		public string ModelName
-		{
-			get;
-			set;
-		}
+    public class PmxModelInformation
+    {
+        public string ModelName { get; set; }
 
-		public string EnglishModelName
-		{
-			get;
-			set;
-		}
+        public string EnglishModelName { get; set; }
 
-		public string Description
-		{
-			get;
-			set;
-		}
+        public string Description { get; set; }
 
-		public string EnglishDescription
-		{
-			get;
-			set;
-		}
+        public string EnglishDescription { get; set; }
 
-		public static PmxModelInformation Parse(BinaryReader br, PmxDocument doc)
-		{
-			return new PmxModelInformation
-			{
-				ModelName = doc.ReadString(br),
-				EnglishModelName = doc.ReadString(br),
-				Description = doc.ReadString(br),
-				EnglishDescription = doc.ReadString(br),
-			};
-		}
+        internal static PmxModelInformation Parse(ref BufferReader br, PmxDocument doc) =>
+            new()
+            {
+                ModelName = br.ReadString(doc.Header),
+                EnglishModelName = br.ReadString(doc.Header),
+                Description = br.ReadString(doc.Header),
+                EnglishDescription = br.ReadString(doc.Header),
+            };
 
-		public void Write(BinaryWriter bw, PmxDocument doc)
-		{
-			doc.WriteString(bw, this.ModelName);
-			doc.WriteString(bw, this.EnglishModelName);
-			doc.WriteString(bw, this.Description);
-			doc.WriteString(bw, this.EnglishDescription);
-		}
-	}
+        internal void Write(ref BufferWriter bw, PmxDocument doc)
+        {
+            bw.Write(this.ModelName, doc.Header);
+            bw.Write(this.EnglishModelName, doc.Header);
+            bw.Write(this.Description, doc.Header);
+            bw.Write(this.EnglishDescription, doc.Header);
+        }
+    }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Pmx
 {
 	[Flags]
 	public enum PmxMaterialOptions : byte

@@ -1,69 +1,45 @@
 ﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Pmx
 {
-	public class PmxMorph
-	{
-		public string Name
-		{
-			get;
-			set;
-		}
+    public class PmxMorph
+    {
+        public string Name { get; set; }
 
-		public string EnglishName
-		{
-			get;
-			set;
-		}
+        public string EnglishName { get; set; }
 
-		public PmxMorphCategory Category
-		{
-			get;
-			set;
-		}
+        public PmxMorphCategory Category { get; set; }
 
-		public PmxMorphKind Kind
-		{
-			get;
-			set;
-		}
+        public PmxMorphKind Kind { get; set; }
 
-		public List<PmxMorphOffset> Offsets
-		{
-			get;
-			set;
-		}
+        public IList<PmxMorphOffset> Offsets { get; set; } = new List<PmxMorphOffset>();
 
-		public PmxMorph()
-		{
-			this.Offsets = new List<PmxMorphOffset>();
-		}
+        internal void Parse(ref BufferReader br, PmxDocument doc)
+        {
+            this.Name = br.ReadString(doc.Header);
+            this.EnglishName = br.ReadString(doc.Header);
+            this.Category = (PmxMorphCategory)br.ReadByte();
+            this.Kind = (PmxMorphKind)br.ReadByte();
 
-		public void Parse(BinaryReader br, PmxDocument doc)
-		{
-			this.Name = doc.ReadString(br);
-			this.EnglishName = doc.ReadString(br);
-			this.Category = (PmxMorphCategory)br.ReadByte();
-			this.Kind = (PmxMorphKind)br.ReadByte();
-			this.Offsets = Enumerable.Range(0, br.ReadInt32()).Select(_ => PmxMorphOffset.Parse(br, doc, this.Kind)).ToList();
-		}
+            var count = br.ReadInt32();
+            for (var i = 0; i < count; i++)
+                this.Offsets.Add(PmxMorphOffset.Parse(ref br, doc, this.Kind));
+        }
 
-		public void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
-		{
-			if (doc.Version < 2.1f)
-				if (this.Kind == PmxMorphKind.Flip)
-					this.Kind = PmxMorphKind.Group;
-				else if (this.Kind == PmxMorphKind.Impulse)
-					return;
+        internal void Write(ref BufferWriter bw, PmxDocument doc, PmxIndexCache cache)
+        {
+            if (doc.Version < 2.1f)
+                if (this.Kind == PmxMorphKind.Flip)
+                    this.Kind = PmxMorphKind.Group;
+                else if (this.Kind == PmxMorphKind.Impulse)
+                    return;
 
-			doc.WriteString(bw, this.Name);
-			doc.WriteString(bw, this.EnglishName);
-			bw.Write((byte)this.Category);
-			bw.Write((byte)this.Kind);
-			bw.Write(this.Offsets.Count);
-			this.Offsets.ForEach(_ => _.Write(bw, doc, cache));
-		}
-	}
+            bw.Write(this.Name, doc.Header);
+            bw.Write(this.EnglishName, doc.Header);
+            bw.Write((byte)this.Category);
+            bw.Write((byte)this.Kind);
+            bw.Write(this.Offsets.Count);
+            foreach (var offset in this.Offsets) offset.Write(ref bw, doc, cache);
+        }
+    }
 }

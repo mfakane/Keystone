@@ -3,44 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Osm
 {
 	public class OsmMorph
 	{
-		public string Name
-		{
-			get;
-			set;
-		}
+		public string Name { get; set; } = "モーフ";
 
-		public OsmMorphKind Kind
-		{
-			get;
-			set;
-		}
+		public OsmMorphKind Kind { get; set; }
 
 		/// <summary>
 		/// 移動させる頂点のインデックス一覧を取得します。
 		/// これは Kind == None の場合、モデルの頂点インデックスです。
 		/// それ以外の場合、Kind == None の Indices におけるインデックスです。
 		/// </summary>
-		public IList<ushort> Indices
-		{
-			get;
-			set;
-		}
+		public IList<ushort> Indices { get; set; } = new List<ushort>();
 
-		public IList<float[]> Offsets
-		{
-			get;
-			set;
-		}
-
-		public OsmMorph()
-		{
-			this.Indices = new List<ushort>();
-			this.Offsets = new List<float[]>();
-		}
+		public IList<float[]> Offsets { get; set; } = new List<float[]>();
 
 		public static OsmMorph Parse(IEnumerable<string> block)
 		{

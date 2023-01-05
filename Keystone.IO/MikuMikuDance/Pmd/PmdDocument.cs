@@ -1,322 +1,267 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Pmd
 {
-	public class PmdDocument
-	{
-		public const string DisplayName = "Polygon Model Data file";
-		public const string Filter = "*.pmd";
-		public static readonly Encoding Encoding = Encoding.GetEncoding(932);
-
-		public float Version
-		{
-			get;
-			set;
-		}
-
-		public string ModelName
-		{
-			get;
-			set;
-		}
-
-		public string Description
-		{
-			get;
-			set;
-		}
-
-		public IList<PmdVertex> Vertices
-		{
-			get;
-			set;
-		}
-
-		public IList<PmdVertex> Indices
-		{
-			get;
-			set;
-		}
-
-		public IList<PmdMaterial> Materials
-		{
-			get;
-			set;
-		}
-
-		public IList<PmdBone> Bones
-		{
-			get;
-			set;
-		}
-
-		public IList<PmdIK> IK
-		{
-			get;
-			set;
-		}
-
-		public IList<PmdMorph> Morphs
-		{
-			get;
-			set;
-		}
-
-		public IList<PmdMorph> MorphDisplayList
-		{
-			get;
-			set;
-		}
-
-		public IList<PmdDisplayList> BoneDisplayList
-		{
-			get;
-			set;
-		}
-
-		public bool EnglishCompatible
-		{
-			get;
-			set;
-		}
-
-		public string EnglishModelName
-		{
-			get;
-			set;
-		}
-
-		public string EnglishDescription
-		{
-			get;
-			set;
-		}
-
-		public IList<string> ToonFileNames
-		{
-			get;
-			set;
-		}
-
-		public IList<PmdRigidBody> Rigids
-		{
-			get;
-			set;
-		}
-
-		public IList<PmdConstraint> Constraints
-		{
-			get;
-			set;
-		}
+    public class PmdDocument
+    {
+        public const string DisplayName = "Polygon Model Data file";
+        public const string Filter = "*.pmd";
+        
+        internal static Encoding Encoding => Encoding.GetEncoding(932);
 
-		public PmdDocument()
-		{
-			this.Vertices = new List<PmdVertex>();
-			this.Indices = new List<PmdVertex>();
-			this.Materials = new List<PmdMaterial>();
-			this.Bones = new List<PmdBone>();
-			this.IK = new List<PmdIK>();
-			this.Morphs = new List<PmdMorph>();
-			this.MorphDisplayList = new List<PmdMorph>();
-			this.BoneDisplayList = new List<PmdDisplayList>();
-			this.ToonFileNames = new List<string>();
-			this.Rigids = new List<PmdRigidBody>();
-			this.Constraints = new List<PmdConstraint>();
-		}
+        public float Version { get; set; }
 
-		public static PmdDocument Parse(Stream stream)
-		{
-			var rt = new PmdDocument();
+        public string ModelName { get; set; }
 
-			// leave open
-			var br = new BinaryReader(stream);
-			var header = ReadPmdString(br, 3);
+        public string Description { get; set; }
 
-			if (header != "Pmd")
-				throw new InvalidOperationException("invalid format");
-
-			rt.Version = br.ReadSingle();
+        public IList<PmdVertex> Vertices { get; set; }
 
-			if (rt.Version >= 2)
-				throw new NotSupportedException("specified format version not supported");
+        public IList<PmdVertex> Indices { get; set; }
 
-			rt.ModelName = ReadPmdString(br, 20);
-			rt.Description = ReadPmdString(br, 256);
-
-			for (var i = br.ReadInt32() - 1; i >= 0; i--)
-				rt.Vertices.Add(PmdVertex.Parse(br, rt));
+        public IList<PmdMaterial> Materials { get; set; }
 
-			for (var i = br.ReadInt32() - 1; i >= 0; i--)
-				rt.Indices.Add(rt.Vertices[br.ReadUInt16()]);
+        public IList<PmdBone> Bones { get; set; }
 
-			for (var i = br.ReadInt32() - 1; i >= 0; i--)
-				rt.Materials.Add(PmdMaterial.Parse(br));
-
-			Enumerable.Range(0, br.ReadUInt16()).Select(_ =>
-			{
-				while (rt.Bones.Count <= _)
-					rt.Bones.Add(new PmdBone());
-
-				return rt.Bones[_];
-			}).ForEach(_ => _.Parse(br, rt));
-
-			for (var i = br.ReadUInt16() - 1; i >= 0; i--)
-				rt.IK.Add(PmdIK.Parse(br, rt));
-
-			var morphs = br.ReadUInt16();
-			PmdMorph morphBase = null;
+        public IList<PmdIK> IK { get; set; }
 
-			for (ushort i = 0; i < morphs; i++)
-			{
-				var m = PmdMorph.Parse(br, rt, morphBase);
+        public IList<PmdMorph> Morphs { get; set; }
 
-				if (m.Kind == PmdMorphKind.None)
-					morphBase = m;
-				else
-					rt.Morphs.Add(m);
-			}
+        public IList<PmdMorph> MorphDisplayList { get; set; }
 
-			for (var i = br.ReadByte() - 1; i >= 0; i--)
-				rt.MorphDisplayList.Add(rt.Morphs[br.ReadUInt16() - 1]);
+        public IList<PmdDisplayList> BoneDisplayList { get; set; }
 
-			var visibleBoneCategories = br.ReadByte();
+        public bool EnglishCompatible { get; set; }
 
-			for (byte i = 0; i < visibleBoneCategories; i++)
-				rt.BoneDisplayList.Add(PmdDisplayList.Parse(br));
+        public string EnglishModelName { get; set; }
 
-			for (var i = br.ReadInt32() - 1; i >= 0; i--)
-			{
-				var bone = rt.Bones[br.ReadInt16()];
+        public string EnglishDescription { get; set; }
 
-				rt.BoneDisplayList[br.ReadByte() - 1].Bones.Add(bone);
-			}
+        public IList<string> ToonFileNames { get; set; }
 
-			if (br.GetRemainingLength() > 0)
-			{
-				rt.EnglishCompatible = br.ReadBoolean();
+        public IList<PmdRigidBody> Rigids { get; set; }
 
-				if (rt.EnglishCompatible)
-				{
-					rt.EnglishModelName = ReadPmdString(br, 20);
-					rt.EnglishDescription = ReadPmdString(br, 256);
+        public IList<PmdConstraint> Constraints { get; set; }
 
-					for (ushort i = 0; i < rt.Bones.Count; i++)
-						rt.Bones[i].EnglishName = ReadPmdString(br, 20);
+        static PmdDocument()
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        }
+        
+        public PmdDocument()
+        {
+            this.Vertices = new List<PmdVertex>();
+            this.Indices = new List<PmdVertex>();
+            this.Materials = new List<PmdMaterial>();
+            this.Bones = new List<PmdBone>();
+            this.IK = new List<PmdIK>();
+            this.Morphs = new List<PmdMorph>();
+            this.MorphDisplayList = new List<PmdMorph>();
+            this.BoneDisplayList = new List<PmdDisplayList>();
+            this.ToonFileNames = new List<string>();
+            this.Rigids = new List<PmdRigidBody>();
+            this.Constraints = new List<PmdConstraint>();
+        }
 
-					for (ushort i = 0; i < morphs - 1; i++)
-						rt.Morphs[i].EnglishName = ReadPmdString(br, 20);
+        public static PmdDocument Parse(in ReadOnlySequence<byte> sequence)
+        {
+            var rt = new PmdDocument();
+            var br = new BufferReader(sequence);
+            var header = br.ReadBytes(3);
 
-					for (byte i = 0; i < visibleBoneCategories; i++)
-						rt.BoneDisplayList[i].EnglishName = ReadPmdString(br, 50);
-				}
+            if (!header.SequenceEqual("Pmd"u8))
+                throw new InvalidOperationException("invalid format");
 
-				if (br.GetRemainingLength() > 0)
-					rt.ToonFileNames = Enumerable.Range(0, 10).Select(_ => ReadPmdString(br, 100)).ToList();
+            rt.Version = br.ReadSingle();
 
-				if (br.GetRemainingLength() > 0)
-				{
-					for (var i = br.ReadInt32() - 1; i >= 0; i--)
-						rt.Rigids.Add(PmdRigidBody.Parse(br));
+            if (rt.Version >= 2)
+                throw new NotSupportedException("specified format version not supported");
 
-					for (var i = br.ReadInt32() - 1; i >= 0; i--)
-						rt.Constraints.Add(PmdConstraint.Parse(br));
-				}
-			}
+            rt.ModelName = br.ReadString(20);
+            rt.Description = br.ReadString(256);
 
-			return rt;
-		}
+            for (var i = br.ReadInt32() - 1; i >= 0; i--)
+                rt.Vertices.Add(PmdVertex.Parse(ref br, rt));
 
-		internal static string ReadPmdString(BinaryReader br, int count)
-		{
-			return Encoding.GetString(br.ReadBytes(count).TakeWhile(_ => _ != '\0').ToArray());
-		}
+            for (var i = br.ReadInt32() - 1; i >= 0; i--)
+                rt.Indices.Add(rt.Vertices[br.ReadUInt16()]);
 
-		internal static void WritePmdString(BinaryWriter bw, string s, int count, byte padding = 0xFD)
-		{
-			var bytes = Encoding.GetBytes(s ?? "");
+            for (var i = br.ReadInt32() - 1; i >= 0; i--)
+                rt.Materials.Add(PmdMaterial.Parse(ref br));
 
-			bw.Write(bytes.Take(count - 1).ToArray());
-			bw.Write(Enumerable.Repeat(padding, Math.Max(count - bytes.Length, 1)).Select((_, idx) => idx == 0 ? (byte)0 : _).ToArray());
-		}
+            var boneCount = br.ReadUInt16();
+            
+            // ensure instance
+            for (var i = rt.Bones.Count; i < boneCount; i++)
+                rt.Bones.Add(new PmdBone());
 
-		internal PmdBone GetBone(short idx)
-		{
-			while (this.Bones.Count <= idx)
-				this.Bones.Add(new PmdBone());
+            for (var i = 0; i < boneCount; i++)
+                rt.Bones[i].Parse(ref br, rt);
 
-			return idx == -1 ? null : this.Bones[idx];
-		}
+            for (var i = br.ReadUInt16() - 1; i >= 0; i--)
+                rt.IK.Add(PmdIK.Parse(ref br, rt));
 
-		public void Write(Stream stream)
-		{
-			// leave open
-			var bw = new BinaryWriter(stream);
-			var cache = new PmdIndexCache(this);
+            var morphs = br.ReadUInt16();
+            PmdMorph? morphBase = null;
 
-			bw.Write(Encoding.GetBytes("Pmd"));
-			bw.Write(this.Version);
-			WritePmdString(bw, this.ModelName, 20);
-			WritePmdString(bw, this.Description, 256);
+            for (ushort i = 0; i < morphs; i++)
+            {
+                var m = PmdMorph.Parse(ref br, rt, morphBase);
 
-			bw.Write((uint)this.Vertices.Count);
-			this.Vertices.ForEach(_ => _.Write(bw, cache));
+                if (m.Kind == PmdMorphKind.None)
+                    morphBase = m;
+                else
+                    rt.Morphs.Add(m);
+            }
 
-			bw.Write((uint)this.Indices.Count);
-			this.Indices.Select(_ => (ushort)cache.Vertices[_]).ForEach(bw.Write);
+            for (var i = br.ReadByte() - 1; i >= 0; i--)
+                rt.MorphDisplayList.Add(rt.Morphs[br.ReadUInt16() - 1]);
 
-			bw.Write((uint)this.Materials.Count);
-			this.Materials.ForEach(_ => _.Write(bw));
+            var visibleBoneCategories = br.ReadByte();
 
-			bw.Write((ushort)this.Bones.Count);
-			this.Bones.ForEach(_ => _.Write(bw, cache));
+            for (byte i = 0; i < visibleBoneCategories; i++)
+                rt.BoneDisplayList.Add(PmdDisplayList.Parse(ref br));
 
-			bw.Write((ushort)this.IK.Count);
-			this.IK.ForEach(_ => _.Write(bw, cache));
+            for (var i = br.ReadInt32() - 1; i >= 0; i--)
+            {
+                var bone = rt.Bones[br.ReadInt16()];
 
-			bw.Write((ushort)(this.Morphs.Count + 1));
+                rt.BoneDisplayList[br.ReadByte() - 1].Bones.Add(bone);
+            }
 
-			var morphBase = PmdMorph.CreateMorphBase(this.Morphs);
-			var morphBaseIndices = morphBase.Indices.Select((_, idx) => Tuple.Create(_, idx)).ToDictionary(_ => _.Item1, _ => _.Item2);
+            if (br.IsCompleted) return rt;
+            
+            rt.EnglishCompatible = br.ReadBoolean();
 
-			morphBase.Write(bw, cache, morphBaseIndices);
-			this.Morphs.ForEach(_ => _.Write(bw, cache, morphBaseIndices));
+            if (rt.EnglishCompatible)
+            {
+                rt.EnglishModelName = br.ReadString(20);
+                rt.EnglishDescription = br.ReadString(256);
 
-			bw.Write((byte)this.MorphDisplayList.Count);
-			this.MorphDisplayList.Select(_ => this.Morphs.IndexOf(_) + 1).ForEach(_ => bw.Write((short)_));
+                for (ushort i = 0; i < rt.Bones.Count; i++)
+                    rt.Bones[i].EnglishName = br.ReadString(20);
 
-			bw.Write((byte)this.BoneDisplayList.Count);
-			this.BoneDisplayList.ForEach(_ => _.Write(bw));
-
-			bw.Write((uint)this.BoneDisplayList.Sum(_ => _.Bones.Count));
-			this.BoneDisplayList.SelectMany((_, idx) => _.Bones.Select(b => Tuple.Create(b, idx + 1))).ForEach(_ =>
-			{
-				bw.Write((short)this.Bones.IndexOf(_.Item1));
-				bw.Write((byte)_.Item2);
-			});
-
-			bw.Write(this.EnglishCompatible);
-
-			if (this.EnglishCompatible)
-			{
-				WritePmdString(bw, this.EnglishModelName, 20);
-				WritePmdString(bw, this.EnglishDescription, 256);
-				this.Bones.Select(_ => _.EnglishName).ForEach(_ => WritePmdString(bw, _, 20));
-				this.Morphs.Select(_ => _.EnglishName).ForEach(_ => WritePmdString(bw, _, 20));
-				this.BoneDisplayList.Select(_ => _.EnglishName).ForEach(_ => WritePmdString(bw, _, 50));
-			}
-
-			Enumerable.Range(0, 10).Select(_ => _ < this.ToonFileNames.Count ? this.ToonFileNames[_] : null).ForEach(_ => WritePmdString(bw, _, 100));
-
-			bw.Write((uint)this.Rigids.Count);
-			this.Rigids.ForEach(_ => _.Write(bw));
-
-			bw.Write((uint)this.Constraints.Count);
-			this.Constraints.ForEach(_ => _.Write(bw));
-		}
-	}
+                for (ushort i = 0; i < morphs - 1; i++)
+                    rt.Morphs[i].EnglishName = br.ReadString(20);
+
+                for (byte i = 0; i < visibleBoneCategories; i++)
+                    rt.BoneDisplayList[i].EnglishName = br.ReadString(50);
+            }
+
+            if (br.IsCompleted) return rt;
+
+            for (var i = 0; i < 10; i++)
+                rt.ToonFileNames.Add(br.ReadString(100));
+
+            if (br.IsCompleted) return rt;
+            
+            for (var i = br.ReadInt32() - 1; i >= 0; i--)
+                rt.Rigids.Add(PmdRigidBody.Parse(ref br));
+
+            for (var i = br.ReadInt32() - 1; i >= 0; i--)
+                rt.Constraints.Add(PmdConstraint.Parse(ref br));
+
+            return rt;
+        }
+
+        internal PmdBone? GetBone(short idx)
+        {
+            while (this.Bones.Count <= idx)
+                this.Bones.Add(new PmdBone());
+
+            return idx == -1 ? null : this.Bones[idx];
+        }
+
+        public void Write(IBufferWriter<byte> writer)
+        {
+            var bw = new BufferWriter(writer);
+            var cache = new PmdIndexCache(this);
+
+            bw.Write("Pmd"u8);
+            bw.Write(this.Version);
+            bw.Write(this.ModelName, 20);
+            bw.Write(this.Description, 256);
+
+            bw.Write((uint)this.Vertices.Count);
+            foreach (var vertex in this.Vertices)
+                vertex.Write(ref bw, cache);
+
+            bw.Write((uint)this.Indices.Count);
+            foreach (var index in this.Indices)
+                bw.Write((ushort)cache[index]);
+
+            bw.Write((uint)this.Materials.Count);
+            foreach (var material in this.Materials)
+                material.Write(ref bw);
+
+            bw.Write((ushort)this.Bones.Count);
+            foreach (var bone in this.Bones)
+                bone.Write(ref bw, cache);
+
+            bw.Write((ushort)this.IK.Count);
+            foreach (var ik in this.IK)
+                ik.Write(ref bw, cache);
+
+            bw.Write((ushort)(this.Morphs.Count + 1));
+
+            var morphBase = PmdMorph.CreateMorphBase(this.Morphs);
+            var morphBaseIndices = morphBase.Indices
+                .Select((x, idx) => Tuple.Create(x, idx))
+                .ToDictionary(x => x.Item1, x => x.Item2);
+
+            morphBase.Write(ref bw, cache, morphBaseIndices);
+            foreach (var morph in this.Morphs)
+                morph.Write(ref bw, cache, morphBaseIndices);
+
+            bw.Write((byte)this.MorphDisplayList.Count);
+            foreach (var morph in this.MorphDisplayList)
+                bw.Write((short)(this.Morphs.IndexOf(morph) + 1));
+
+            bw.Write((byte)this.BoneDisplayList.Count);
+            foreach (var displayList in this.BoneDisplayList)
+                displayList.Write(ref bw);
+
+            bw.Write((uint)this.BoneDisplayList.Sum(x => x.Bones.Count));
+            foreach (var displayList in this.BoneDisplayList)
+            {
+                foreach (var item in displayList.Bones.Select((x, i) => new { Bone = x, Index = i }))
+                {
+                    bw.Write(cache[item.Bone]);
+                    bw.Write((byte)item.Index);
+                }
+            }
+
+            bw.Write(this.EnglishCompatible);
+
+            if (this.EnglishCompatible)
+            {
+                bw.Write(this.EnglishModelName, 20);
+                bw.Write(this.EnglishDescription, 256);
+
+                foreach (var bone in this.Bones)
+                    bw.Write(bone.EnglishName, 20);
+                
+                foreach (var morph in this.Morphs)
+                    bw.Write(morph.EnglishName, 20);
+                
+                foreach (var displayList in this.BoneDisplayList)
+                    bw.Write(displayList.EnglishName, 50);
+            }
+
+            for (var i = 0; i < 10; i++)
+                bw.Write(this.ToonFileNames.ElementAtOrDefault(i) ?? "", 100);
+
+            bw.Write((uint)this.Rigids.Count);
+            foreach (var rigid in this.Rigids)
+                rigid.Write(ref bw);
+
+            bw.Write((uint)this.Constraints.Count);
+            foreach (var constraint in this.Constraints)
+                constraint.Write(ref bw);
+        }
+    }
 }

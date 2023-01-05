@@ -1,66 +1,43 @@
-﻿using System.IO;
+﻿using System.Numerics;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Pmx
 {
-	public class PmxIKBinding
-	{
-		public PmxBone Bone
-		{
-			get;
-			set;
-		}
+    public class PmxIKBinding
+    {
+        public PmxBone? Bone { get; set; }
 
-		public bool IsAngleLimitEnabled
-		{
-			get;
-			set;
-		}
+        public bool IsAngleLimitEnabled { get; set; }
 
-		public float[] LowerAngleLimit
-		{
-			get;
-			set;
-		}
+        public Vector3 LowerAngleLimit { get; set; }
 
-		public float[] HigherAngleLimit
-		{
-			get;
-			set;
-		}
+        public Vector3 HigherAngleLimit { get; set; }
 
-		public PmxIKBinding()
-		{
-			this.LowerAngleLimit = new[] { 0f, 0, 0 };
-			this.HigherAngleLimit = new[] { 0f, 0, 0 };
-		}
+        internal static PmxIKBinding Parse(ref BufferReader br, PmxDocument doc)
+        {
+            var rt = new PmxIKBinding
+            {
+                Bone = doc.ReadBone(ref br),
+                IsAngleLimitEnabled = br.ReadBoolean(),
+            };
 
-		public static PmxIKBinding Parse(BinaryReader br, PmxDocument doc)
-		{
-			var rt = new PmxIKBinding
-			{
-				Bone = doc.ReadBone(br),
-				IsAngleLimitEnabled = br.ReadBoolean(),
-			};
+            if (rt.IsAngleLimitEnabled)
+            {
+                rt.LowerAngleLimit = br.ReadVector3();
+                rt.HigherAngleLimit = br.ReadVector3();
+            }
 
-			if (rt.IsAngleLimitEnabled)
-			{
-				rt.LowerAngleLimit = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
-				rt.HigherAngleLimit = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
-			}
+            return rt;
+        }
 
-			return rt;
-		}
+        internal void Write(ref BufferWriter bw, PmxIndexCache cache)
+        {
+            bw.Write(this.Bone, cache);
+            bw.Write(this.IsAngleLimitEnabled);
 
-		public void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
-		{
-			cache.Write(this.Bone);
-			bw.Write(this.IsAngleLimitEnabled);
-
-			if (this.IsAngleLimitEnabled)
-			{
-				this.LowerAngleLimit.ForEach(bw.Write);
-				this.HigherAngleLimit.ForEach(bw.Write);
-			}
-		}
-	}
+            if (!this.IsAngleLimitEnabled) return;
+            
+            bw.Write(this.LowerAngleLimit);
+            bw.Write(this.HigherAngleLimit);
+        }
+    }
 }

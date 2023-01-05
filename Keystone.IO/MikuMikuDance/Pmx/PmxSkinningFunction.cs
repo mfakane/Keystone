@@ -1,209 +1,182 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
+using System.Numerics;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Pmx
 {
-	public abstract class PmxSkinningFunction
-	{
-		public static PmxSkinningFunction Parse(BinaryReader br, PmxDocument doc, PmxSkinningKind kind)
-		{
-			PmxSkinningFunction rt;
+    public abstract class PmxSkinningFunction
+    {
+        internal static PmxSkinningFunction Parse(ref BufferReader br, PmxDocument doc, PmxSkinningKind kind)
+        {
+            PmxSkinningFunction rt;
 
-			switch (kind)
-			{
-				case PmxSkinningKind.LinearBlendDeforming1:
-					rt = new PmxLinearBlendDeforming1();
+            switch (kind)
+            {
+                case PmxSkinningKind.LinearBlendDeforming1:
+                    rt = new PmxLinearBlendDeforming1();
 
-					break;
-				case PmxSkinningKind.LinearBlendDeforming2:
-					rt = new PmxLinearBlendDeforming2();
+                    break;
+                case PmxSkinningKind.LinearBlendDeforming2:
+                    rt = new PmxLinearBlendDeforming2();
 
-					break;
-				case PmxSkinningKind.LinearBlendDeforming4:
-					rt = new PmxLinearBlendDeforming4();
+                    break;
+                case PmxSkinningKind.LinearBlendDeforming4:
+                    rt = new PmxLinearBlendDeforming4();
 
-					break;
-				case PmxSkinningKind.SphericalDeforming:
-					rt = new PmxSphericalDeforming();
+                    break;
+                case PmxSkinningKind.SphericalDeforming:
+                    rt = new PmxSphericalDeforming();
 
-					break;
-				case PmxSkinningKind.DualQuaternionDeforming:
-					rt = new PmxDualQuaternionDeforming();
+                    break;
+                case PmxSkinningKind.DualQuaternionDeforming:
+                    rt = new PmxDualQuaternionDeforming();
 
-					break;
-				default:
-					throw new NotSupportedException();
-			}
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
 
-			rt.Read(br, doc);
+            rt.Read(ref br, doc);
 
-			return rt;
-		}
+            return rt;
+        }
 
-		public abstract void Read(BinaryReader br, PmxDocument doc);
-		public abstract void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache);
-	}
+        internal abstract void Read(ref BufferReader br, PmxDocument doc);
+        internal abstract void Write(ref BufferWriter bw, PmxDocument doc, PmxIndexCache cache);
+    }
 
-	public class PmxLinearBlendDeforming1 : PmxSkinningFunction
-	{
-		public PmxBone Bone
-		{
-			get;
-			set;
-		}
+    public class PmxLinearBlendDeforming1 : PmxSkinningFunction
+    {
+        public PmxBone? Bone { get; set; }
 
-		public PmxLinearBlendDeforming1()
-		{
-		}
+        public PmxLinearBlendDeforming1()
+        {
+        }
 
-		public override void Read(BinaryReader br, PmxDocument doc)
-		{
-			this.Bone = doc.ReadBone(br);
-		}
+        internal override void Read(ref BufferReader br, PmxDocument doc)
+        {
+            this.Bone = doc.ReadBone(ref br);
+        }
 
-		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
-		{
-			cache.Write(this.Bone);
-		}
-	}
+        internal override void Write(ref BufferWriter bw, PmxDocument doc, PmxIndexCache cache)
+        {
+            bw.Write(this.Bone, cache);
+        }
+    }
 
-	public class PmxLinearBlendDeforming2 : PmxSkinningFunction
-	{
-		public PmxBone[] Bones
-		{
-			get;
-			set;
-		}
+    public class PmxLinearBlendDeforming2 : PmxSkinningFunction
+    {
+        public PmxBone? BoneA { get; set; }
+        
+        public PmxBone? BoneB { get; set; }
 
-		public float Weight
-		{
-			get;
-			set;
-		}
+        public float Weight { get; set; }
 
-		public PmxLinearBlendDeforming2()
-		{
-			this.Bones = new PmxBone[2];
-		}
+        public PmxLinearBlendDeforming2()
+        {
+        }
 
-		public override void Read(BinaryReader br, PmxDocument doc)
-		{
-			this.Bones = Enumerable.Range(0, 2).Select(_ => doc.ReadBone(br)).ToArray();
-			this.Weight = br.ReadSingle();
-		}
+        internal override void Read(ref BufferReader br, PmxDocument doc)
+        {
+            this.BoneA = doc.ReadBone(ref br);
+            this.BoneB = doc.ReadBone(ref br);
+            this.Weight = br.ReadSingle();
+        }
 
-		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
-		{
-			this.Bones.ForEach(_ => cache.Write(_));
-			bw.Write(this.Weight);
-		}
-	}
+        internal override void Write(ref BufferWriter bw, PmxDocument doc, PmxIndexCache cache)
+        {
+            bw.Write(this.BoneA, cache);
+            bw.Write(this.BoneB, cache);
+            bw.Write(this.Weight);
+        }
+    }
 
-	public class PmxLinearBlendDeforming4 : PmxSkinningFunction
-	{
-		public PmxBone[] Bones
-		{
-			get;
-			set;
-		}
+    public class PmxLinearBlendDeforming4 : PmxSkinningFunction
+    {
+        public PmxBone? BoneA { get; set; }
+        
+        public PmxBone? BoneB { get; set; }
+        
+        public PmxBone? BoneC { get; set; }
+        
+        public PmxBone? BoneD { get; set; }
+        
+        public Vector4 Weights { get; set; }
 
-		public float[] Weights
-		{
-			get;
-			set;
-		}
+        public PmxLinearBlendDeforming4()
+        {
+        }
 
-		public PmxLinearBlendDeforming4()
-		{
-			this.Bones = new PmxBone[4];
-		}
+        internal override void Read(ref BufferReader br, PmxDocument doc)
+        {
+            this.BoneA = doc.ReadBone(ref br);
+            this.BoneB = doc.ReadBone(ref br);
+            this.BoneC = doc.ReadBone(ref br);
+            this.BoneD = doc.ReadBone(ref br);
+            this.Weights = br.ReadVector4();
+        }
 
-		public override void Read(BinaryReader br, PmxDocument doc)
-		{
-			this.Bones = Enumerable.Range(0, 4).Select(_ => doc.ReadBone(br)).ToArray();
-			this.Weights = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
-		}
+        internal override void Write(ref BufferWriter bw, PmxDocument doc, PmxIndexCache cache)
+        {
+            bw.Write(this.BoneA, cache);
+            bw.Write(this.BoneB, cache);
+            bw.Write(this.BoneC, cache);
+            bw.Write(this.BoneD, cache);
+            bw.Write(this.Weights);
+        }
+    }
 
-		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
-		{
-			this.Bones.ForEach(_ => cache.Write(_));
-			this.Weights.ForEach(bw.Write);
-		}
-	}
+    public class PmxSphericalDeforming : PmxSkinningFunction
+    {
+        public PmxBone? BoneA { get; set; }
+        
+        public PmxBone? BoneB { get; set; }
 
-	public class PmxSphericalDeforming : PmxSkinningFunction
-	{
-		public PmxBone[] Bones
-		{
-			get;
-			set;
-		}
+        public float Weight { get; set; }
 
-		public float Weight
-		{
-			get;
-			set;
-		}
+        /// <summary>
+        /// Vector3 SDEF-C
+        /// </summary>
+        public Vector3 Center { get; set; }
 
-		/// <summary>
-		/// Vector3 SDEF-C
-		/// </summary>
-		public float[] Center
-		{
-			get;
-			set;
-		}
+        /// <summary>
+        /// Vector3 SDEF-R0
+        /// </summary>
+        public Vector3 RangeZero { get; set; }
 
-		/// <summary>
-		/// Vector3 SDEF-R0
-		/// </summary>
-		public float[] RangeZero
-		{
-			get;
-			set;
-		}
+        /// <summary>
+        /// Vector3 SDEF-R1
+        /// </summary>
+        public Vector3 RangeOne { get; set; }
 
-		/// <summary>
-		/// Vector3 SDEF-R1
-		/// </summary>
-		public float[] RangeOne
-		{
-			get;
-			set;
-		}
+        public PmxSphericalDeforming()
+        {
+        }
 
-		public PmxSphericalDeforming()
-		{
-			this.Bones = new PmxBone[2];
-			this.Center = new[] { 0f, 0, 0 };
-			this.RangeZero = new[] { 0f, 0, 0 };
-			this.RangeOne = new[] { 0f, 0, 0 };
-		}
+        internal override void Read(ref BufferReader br, PmxDocument doc)
+        {
+            this.BoneA = doc.ReadBone(ref br);
+            this.BoneB = doc.ReadBone(ref br);
+            this.Weight = br.ReadSingle();
+            this.Center = br.ReadVector3();
+            this.RangeZero = br.ReadVector3();
+            this.RangeOne = br.ReadVector3();
+        }
 
-		public override void Read(BinaryReader br, PmxDocument doc)
-		{
-			this.Bones = Enumerable.Range(0, 2).Select(_ => doc.ReadBone(br)).ToArray();
-			this.Weight = br.ReadSingle();
-			this.Center = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
-			this.RangeZero = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
-			this.RangeOne = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
-		}
+        internal override void Write(ref BufferWriter bw, PmxDocument doc, PmxIndexCache cache)
+        {
+            bw.Write(this.BoneA, cache);
+            bw.Write(this.BoneB, cache);
+            bw.Write(this.Weight);
+            bw.Write(this.Center);
+            bw.Write(this.RangeZero);
+            bw.Write(this.RangeOne);
+        }
+    }
 
-		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
-		{
-			this.Bones.ForEach(_ => cache.Write(_));
-			bw.Write(this.Weight);
-			this.Center.ForEach(bw.Write);
-			this.RangeZero.ForEach(bw.Write);
-			this.RangeOne.ForEach(bw.Write);
-		}
-	}
-
-	/// <summary>
-	/// (PMX 2.1)
-	/// </summary>
-	public class PmxDualQuaternionDeforming : PmxLinearBlendDeforming4
-	{
-	}
+    /// <summary>
+    /// (PMX 2.1)
+    /// </summary>
+    public class PmxDualQuaternionDeforming : PmxLinearBlendDeforming4
+    {
+    }
 }

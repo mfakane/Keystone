@@ -1,4 +1,4 @@
-﻿namespace Linearstar.Keystone.IO.MikuMikuDance
+﻿namespace Linearstar.Keystone.IO.MikuMikuDance.Pmd
 {
 	public enum PmdBoneKind : byte
 	{

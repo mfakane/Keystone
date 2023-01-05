@@ -1,31 +1,19 @@
-﻿using System.IO;
-
-namespace Linearstar.Keystone.IO.MikuMikuDance
+﻿namespace Linearstar.Keystone.IO.MikuMikuDance.Xx
 {
 	public class XxLine
 	{
-		public ushort From
-		{
-			get;
-			set;
-		}
+		public ushort From { get; set; }
 
-		public ushort To
-		{
-			get;
-			set;
-		}
+		public ushort To { get; set; }
 
-		public static XxLine Parse(BinaryReader br)
-		{
-			return new XxLine
+		internal static XxLine Parse(ref BufferReader br) =>
+			new()
 			{
 				From = br.ReadUInt16(),
 				To = br.ReadUInt16(),
 			};
-		}
 
-		public void Write(BinaryWriter bw)
+		internal void Write(ref BufferWriter bw)
 		{
 			bw.Write(this.From);
 			bw.Write(this.To);

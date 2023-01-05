@@ -1,4 +1,4 @@
-﻿namespace Linearstar.Keystone.IO.MikuMikuDance
+﻿namespace Linearstar.Keystone.IO.MikuMikuDance.Vmd
 {
 	public enum VmdSelfShadowModel : byte
 	{

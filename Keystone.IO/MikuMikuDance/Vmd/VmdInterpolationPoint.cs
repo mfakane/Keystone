@@ -1,12 +1,12 @@
 ﻿using System;
 using System.IO;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Vmd
 {
 	public struct VmdInterpolationPoint
 	{
-		public static readonly VmdInterpolationPoint DefaultA = new VmdInterpolationPoint(20, 20);
-		public static readonly VmdInterpolationPoint DefaultB = new VmdInterpolationPoint(107, 107);
+		public static readonly VmdInterpolationPoint DefaultA = new(20, 20);
+		public static readonly VmdInterpolationPoint DefaultB = new(107, 107);
 
 		public byte X;
 		public byte Y;
@@ -22,10 +22,10 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 			this.X = x;
 			this.Y = y;
 		}
+		
+		public static VmdInterpolationPoint Parse(BinaryReader br) =>
+			new(br.ReadByte(), br.ReadByte());
 
-		public override string ToString()
-		{
-			return "{X:" + this.X + " Y:" + this.Y + "}";
-		}
+		public override string ToString() => $"{{X:{this.X} Y:{this.Y}}}";
 	}
 }

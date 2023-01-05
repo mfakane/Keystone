@@ -1,42 +1,26 @@
-﻿using System.IO;
-
-namespace Linearstar.Keystone.IO.MikuMikuDance
+﻿namespace Linearstar.Keystone.IO.MikuMikuDance.Vmd
 {
-	public class VmdMorphFrame
-	{
-		public string Name
-		{
-			get;
-			set;
-		}
+    public class VmdMorphFrame
+    {
+        public string Name { get; set; }
 
-		public uint FrameTime
-		{
-			get;
-			set;
-		}
+        public uint FrameTime { get; set; }
 
-		public float Weight
-		{
-			get;
-			set;
-		}
+        public float Weight { get; set; }
 
-		public static VmdMorphFrame Parse(BinaryReader br)
-		{
-			return new VmdMorphFrame
-			{
-				Name = VmdDocument.ReadVmdString(br, 15),
-				FrameTime = br.ReadUInt32(),
-				Weight = br.ReadSingle(),
-			};
-		}
+        internal static VmdMorphFrame Parse(ref BufferReader br) =>
+            new()
+            {
+                Name = br.ReadString(15),
+                FrameTime = br.ReadUInt32(),
+                Weight = br.ReadSingle(),
+            };
 
-		public void Write(BinaryWriter bw, VmdVersion version)
-		{
-			VmdDocument.WriteVmdString(bw, this.Name, 15, version);
-			bw.Write(this.FrameTime);
-			bw.Write(this.Weight);
-		}
-	}
+        internal void Write(ref BufferWriter bw)
+        {
+            bw.Write(this.Name, 15);
+            bw.Write(this.FrameTime);
+            bw.Write(this.Weight);
+        }
+    }
 }

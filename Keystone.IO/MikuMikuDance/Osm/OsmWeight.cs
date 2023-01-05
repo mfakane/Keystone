@@ -1,26 +1,14 @@
 ﻿using System.Linq;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Osm
 {
 	public class OsmWeight
 	{
-		public ushort BoneA
-		{
-			get;
-			set;
-		}
+		public ushort BoneA { get; set; }
 
-		public ushort BoneB
-		{
-			get;
-			set;
-		}
+		public ushort BoneB { get; set; }
 
-		public int Weight
-		{
-			get;
-			set;
-		}
+		public int Weight { get; set; }
 
 		public static OsmWeight Parse(string line)
 		{

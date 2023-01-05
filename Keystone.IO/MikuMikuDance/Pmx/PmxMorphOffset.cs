@@ -1,427 +1,287 @@
 ﻿using System;
-using System.IO;
+using System.Numerics;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Pmx
 {
-	public abstract class PmxMorphOffset
-	{
-		public abstract void Read(BinaryReader br, PmxDocument doc);
-		public abstract void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache);
+    public abstract class PmxMorphOffset
+    {
+        internal abstract void Read(ref BufferReader br, PmxDocument doc);
+        internal abstract void Write(ref BufferWriter bw, PmxDocument doc, PmxIndexCache cache);
 
-		public static PmxMorphOffset Parse(BinaryReader br, PmxDocument doc, PmxMorphKind kind)
-		{
-			PmxMorphOffset rt;
+        internal static PmxMorphOffset Parse(ref BufferReader br, PmxDocument doc, PmxMorphKind kind)
+        {
+            PmxMorphOffset rt;
 
-			switch (kind)
-			{
-				case PmxMorphKind.Group:
-					rt = new PmxGroupMorphOffset();
+            switch (kind)
+            {
+                case PmxMorphKind.Group:
+                    rt = new PmxGroupMorphOffset();
 
-					break;
-				case PmxMorphKind.Vertex:
-					rt = new PmxVertexMorphOffset();
+                    break;
+                case PmxMorphKind.Vertex:
+                    rt = new PmxVertexMorphOffset();
 
-					break;
-				case PmxMorphKind.Bone:
-					rt = new PmxBoneMorphOffset();
+                    break;
+                case PmxMorphKind.Bone:
+                    rt = new PmxBoneMorphOffset();
 
-					break;
-				case PmxMorphKind.UV:
-					rt = new PmxUVMorphOffset();
+                    break;
+                case PmxMorphKind.UV:
+                    rt = new PmxUVMorphOffset();
 
-					break;
-				case PmxMorphKind.AdditionalUV1:
-					rt = new PmxUVMorphOffset();
+                    break;
+                case PmxMorphKind.AdditionalUV1:
+                    rt = new PmxUVMorphOffset();
 
-					break;
-				case PmxMorphKind.AdditionalUV2:
-					rt = new PmxUVMorphOffset();
+                    break;
+                case PmxMorphKind.AdditionalUV2:
+                    rt = new PmxUVMorphOffset();
 
-					break;
-				case PmxMorphKind.AdditionalUV3:
-					rt = new PmxUVMorphOffset();
+                    break;
+                case PmxMorphKind.AdditionalUV3:
+                    rt = new PmxUVMorphOffset();
 
-					break;
-				case PmxMorphKind.AdditionalUV4:
-					rt = new PmxUVMorphOffset();
+                    break;
+                case PmxMorphKind.AdditionalUV4:
+                    rt = new PmxUVMorphOffset();
 
-					break;
-				case PmxMorphKind.Material:
-					rt = new PmxMaterialMorphOffset();
+                    break;
+                case PmxMorphKind.Material:
+                    rt = new PmxMaterialMorphOffset();
 
-					break;
-				case PmxMorphKind.Flip:
-					rt = new PmxFlipMorphOffset();
+                    break;
+                case PmxMorphKind.Flip:
+                    rt = new PmxFlipMorphOffset();
 
-					break;
-				case PmxMorphKind.Impulse:
-					rt = new PmxImpulseMorphOffset();
+                    break;
+                case PmxMorphKind.Impulse:
+                    rt = new PmxImpulseMorphOffset();
 
-					break;
-				default:
-					throw new ArgumentException();
-			}
+                    break;
+                default:
+                    throw new ArgumentException();
+            }
 
-			rt.Read(br, doc);
+            rt.Read(ref br, doc);
 
-			return rt;
-		}
-	}
+            return rt;
+        }
+    }
 
-	public class PmxVertexMorphOffset : PmxMorphOffset
-	{
-		public PmxVertex Vertex
-		{
-			get;
-			set;
-		}
+    public class PmxVertexMorphOffset : PmxMorphOffset
+    {
+        public PmxVertex? Vertex { get; set; }
 
-		/// <summary>
-		/// Vector3
-		/// </summary>
-		public float[] Offset
-		{
-			get;
-			set;
-		}
+        public Vector3 Offset { get; set; }
 
-		public PmxVertexMorphOffset()
-		{
-			this.Offset = new[] { 0f, 0, 0 };
-		}
+        internal override void Read(ref BufferReader br, PmxDocument doc)
+        {
+            this.Vertex = doc.ReadVertex(ref br);
+            this.Offset = br.ReadVector3();
+        }
 
-		public override void Read(BinaryReader br, PmxDocument doc)
-		{
-			this.Vertex = doc.ReadVertex(br);
-			this.Offset = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
-		}
+        internal override void Write(ref BufferWriter bw, PmxDocument doc, PmxIndexCache cache)
+        {
+            bw.Write(this.Vertex, cache);
+            bw.Write(this.Offset);
+        }
+    }
 
-		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
-		{
-			cache.Write(this.Vertex);
-			this.Offset.ForEach(bw.Write);
-		}
-	}
+    public class PmxUVMorphOffset : PmxMorphOffset
+    {
+        public PmxVertex? Vertex { get; set; }
 
-	public class PmxUVMorphOffset : PmxMorphOffset
-	{
-		public PmxVertex Vertex
-		{
-			get;
-			set;
-		}
+        public Vector4 Offset { get; set; }
 
-		/// <summary>
-		/// Vector4
-		/// </summary>
-		public float[] Offset
-		{
-			get;
-			set;
-		}
+        internal override void Read(ref BufferReader br, PmxDocument doc)
+        {
+            this.Vertex = doc.ReadVertex(ref br);
+            this.Offset = br.ReadVector4();
+        }
 
-		public PmxUVMorphOffset()
-		{
-			this.Offset = new[] { 0f, 0, 0, 0 };
-		}
+        internal override void Write(ref BufferWriter bw, PmxDocument doc, PmxIndexCache cache)
+        {
+            bw.Write(this.Vertex, cache);
+            bw.Write(this.Offset);
+        }
+    }
 
-		public override void Read(BinaryReader br, PmxDocument doc)
-		{
-			this.Vertex = doc.ReadVertex(br);
-			this.Offset = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
-		}
+    public class PmxBoneMorphOffset : PmxMorphOffset
+    {
+        public PmxBone? Bone { get; set; }
 
-		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
-		{
-			cache.Write(this.Vertex);
-			this.Offset.ForEach(bw.Write);
-		}
-	}
+        public Vector3 MovementOffset { get; set; }
 
-	public class PmxBoneMorphOffset : PmxMorphOffset
-	{
-		public PmxBone Bone
-		{
-			get;
-			set;
-		}
+        public Quaternion RotationOffset { get; set; }
 
-		/// <summary>
-		/// Vector3
-		/// </summary>
-		public float[] MovementOffset
-		{
-			get;
-			set;
-		}
+        internal override void Read(ref BufferReader br, PmxDocument doc)
+        {
+            this.Bone = doc.ReadBone(ref br);
+            this.MovementOffset = br.ReadVector3();
+            this.RotationOffset = br.ReadQuaternion();
+        }
 
-		/// <summary>
-		/// Vector4
-		/// </summary>
-		public float[] RotationOffset
-		{
-			get;
-			set;
-		}
+        internal override void Write(ref BufferWriter bw, PmxDocument doc, PmxIndexCache cache)
+        {
+            bw.Write(this.Bone, cache);
+            bw.Write(this.MovementOffset);
+            bw.Write(this.RotationOffset);
+        }
+    }
 
-		public PmxBoneMorphOffset()
-		{
-			this.MovementOffset = new[] { 0f, 0, 0 };
-			this.RotationOffset = new[] { 0f, 0, 0, 0 };
-		}
+    public class PmxMaterialMorphOffset : PmxMorphOffset
+    {
+        public PmxMaterial? Material { get; set; }
 
-		public override void Read(BinaryReader br, PmxDocument doc)
-		{
-			this.Bone = doc.ReadBone(br);
-			this.MovementOffset = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
-			this.RotationOffset = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
-		}
+        public PmxMaterialMorphKind Kind { get; set; }
 
-		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
-		{
-			cache.Write(this.Bone);
-			this.MovementOffset.ForEach(bw.Write);
-			this.RotationOffset.ForEach(bw.Write);
-		}
-	}
+        /// <summary>
+        /// r, g, b, a
+        /// </summary>
+        public Color4 Diffuse { get; set; }
 
-	public class PmxMaterialMorphOffset : PmxMorphOffset
-	{
-		public PmxMaterial Material
-		{
-			get;
-			set;
-		}
+        public Color3 Specular { get; set; }
 
-		public PmxMaterialMorphKind Kind
-		{
-			get;
-			set;
-		}
+        public float Power { get; set; }
 
-		/// <summary>
-		/// r, g, b, a
-		/// </summary>
-		public float[] Diffuse
-		{
-			get;
-			set;
-		}
+        public Color3 Ambient { get; set; }
 
-		public float[] Specular
-		{
-			get;
-			set;
-		}
+        /// <summary>
+        /// r, g, b, a
+        /// </summary>
+        public Color4 EdgeColor { get; set; }
 
-		public float Power
-		{
-			get;
-			set;
-		}
+        public float EdgeSize { get; set; }
 
-		public float[] Ambient
-		{
-			get;
-			set;
-		}
+        /// <summary>
+        /// r, g, b, a
+        /// </summary>
+        public Color4 Texture { get; set; }
 
-		/// <summary>
-		/// r, g, b, a
-		/// </summary>
-		public float[] EdgeColor
-		{
-			get;
-			set;
-		}
+        /// <summary>
+        /// r, g, b, a
+        /// </summary>
+        public Color4 SubTexture { get; set; }
 
-		public float EdgeSize
-		{
-			get;
-			set;
-		}
+        /// <summary>
+        /// r, g, b, a
+        /// </summary>
+        public Color4 ToonTexture { get; set; }
 
-		/// <summary>
-		/// r, g, b, a
-		/// </summary>
-		public float[] Texture
-		{
-			get;
-			set;
-		}
+        public PmxMaterialMorphOffset()
+            : this(true)
+        {
+        }
 
-		/// <summary>
-		/// r, g, b, a
-		/// </summary>
-		public float[] SubTexture
-		{
-			get;
-			set;
-		}
+        public PmxMaterialMorphOffset(bool initializeWithOne)
+        {
+            if (initializeWithOne)
+            {
+                this.Diffuse = Color4.One;
+                this.Specular = Color3.One;
+                this.Ambient = Color3.One;
+                this.EdgeColor = Color4.One;
+                this.EdgeSize = 1;
+                this.Texture = Color4.One;
+                this.SubTexture = Color4.One;
+                this.ToonTexture = Color4.One;
+            }
+            else
+            {
+                this.Diffuse = Color4.Zero;
+                this.Specular = Color3.Zero;
+                this.Ambient = Color3.Zero;
+                this.EdgeColor = Color4.Zero;
+                this.Texture = Color4.Zero;
+                this.SubTexture = Color4.Zero;
+                this.ToonTexture = Color4.Zero;
+            }
+        }
 
-		/// <summary>
-		/// r, g, b, a
-		/// </summary>
-		public float[] ToonTexture
-		{
-			get;
-			set;
-		}
+        internal override void Read(ref BufferReader br, PmxDocument doc)
+        {
+            this.Material = doc.ReadMaterial(ref br);
+            this.Kind = (PmxMaterialMorphKind)br.ReadByte();
+            this.Diffuse = br.ReadColor4();
+            this.Specular = br.ReadColor3();
+            this.Power = br.ReadSingle();
+            this.Ambient = br.ReadColor3();
+            this.EdgeColor = br.ReadColor4();
+            this.EdgeSize = br.ReadSingle();
+            this.Texture = br.ReadColor4();
+            this.SubTexture = br.ReadColor4();
+            this.ToonTexture = br.ReadColor4();
+        }
 
-		public PmxMaterialMorphOffset()
-			: this(true)
-		{
-		}
+        internal override void Write(ref BufferWriter bw, PmxDocument doc, PmxIndexCache cache)
+        {
+            bw.Write(this.Material, cache);
+            bw.Write((byte)this.Kind);
+            bw.Write(this.Diffuse);
+            bw.Write(this.Specular);
+            bw.Write(this.Power);
+            bw.Write(this.Ambient);
+            bw.Write(this.EdgeColor);
+            bw.Write(this.EdgeSize);
+            bw.Write(this.Texture);
+            bw.Write(this.SubTexture);
+            bw.Write(this.ToonTexture);
+        }
+    }
 
-		public PmxMaterialMorphOffset(bool initializeWithOne)
-		{
-			if (initializeWithOne)
-			{
-				this.Diffuse = new[] { 1f, 1, 1, 1 };
-				this.Specular = new[] { 1f, 1, 1 };
-				this.Ambient = new[] { 1f, 1, 1 };
-				this.EdgeColor = new[] { 1f, 1, 1, 1 };
-				this.EdgeSize = 1;
-				this.Texture = new[] { 1f, 1, 1, 1 };
-				this.SubTexture = new[] { 1f, 1, 1, 1 };
-				this.ToonTexture = new[] { 1f, 1, 1, 1 };
-			}
-			else
-			{
-				this.Diffuse = new[] { 0f, 0, 0, 0 };
-				this.Specular = new[] { 0f, 0, 0 };
-				this.Ambient = new[] { 0f, 0, 0 };
-				this.EdgeColor = new[] { 0f, 0, 0, 0 };
-				this.Texture = new[] { 0f, 0, 0, 0 };
-				this.SubTexture = new[] { 0f, 0, 0, 0 };
-				this.ToonTexture = new[] { 0f, 0, 0, 0 };
-			}
-		}
+    public class PmxGroupMorphOffset : PmxMorphOffset
+    {
+        public PmxMorph? Morph { get; set; }
 
-		public override void Read(BinaryReader br, PmxDocument doc)
-		{
-			this.Material = doc.ReadMaterial(br);
-			this.Kind = (PmxMaterialMorphKind)br.ReadByte();
-			this.Diffuse = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
-			this.Specular = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
-			this.Power = br.ReadSingle();
-			this.Ambient = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
-			this.EdgeColor = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
-			this.EdgeSize = br.ReadSingle();
-			this.Texture = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
-			this.SubTexture = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
-			this.ToonTexture = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
-		}
+        public float Weight { get; set; }
 
-		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
-		{
-			cache.Write(this.Material);
-			bw.Write((byte)this.Kind);
-			this.Diffuse.ForEach(bw.Write);
-			this.Specular.ForEach(bw.Write);
-			bw.Write(this.Power);
-			this.Ambient.ForEach(bw.Write);
-			this.EdgeColor.ForEach(bw.Write);
-			bw.Write(this.EdgeSize);
-			this.Texture.ForEach(bw.Write);
-			this.SubTexture.ForEach(bw.Write);
-			this.ToonTexture.ForEach(bw.Write);
-		}
-	}
+        internal override void Read(ref BufferReader br, PmxDocument doc)
+        {
+            this.Morph = doc.ReadMorph(ref br);
+            this.Weight = br.ReadSingle();
+        }
 
-	public class PmxGroupMorphOffset : PmxMorphOffset
-	{
-		public PmxMorph Morph
-		{
-			get;
-			set;
-		}
+        internal override void Write(ref BufferWriter bw, PmxDocument doc, PmxIndexCache cache)
+        {
+            bw.Write(this.Morph, cache);
+            bw.Write(this.Weight);
+        }
+    }
 
-		public float Weight
-		{
-			get;
-			set;
-		}
+    /// <summary>
+    /// (PMX 2.1)
+    /// </summary>
+    public class PmxFlipMorphOffset : PmxGroupMorphOffset
+    {
+    }
 
-		public PmxGroupMorphOffset()
-		{
-		}
+    /// <summary>
+    /// (PMX 2.1)
+    /// </summary>
+    public class PmxImpulseMorphOffset : PmxMorphOffset
+    {
+        public PmxRigidBody? Rigid { get; set; }
 
-		public override void Read(BinaryReader br, PmxDocument doc)
-		{
-			this.Morph = doc.ReadMorph(br);
-			this.Weight = br.ReadSingle();
-		}
+        public bool IsLocal { get; set; }
 
-		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
-		{
-			cache.Write(this.Morph);
-			bw.Write(this.Weight);
-		}
-	}
+        public Vector3 CentralImpulse { get; set; }
 
-	/// <summary>
-	/// (PMX 2.1)
-	/// </summary>
-	public class PmxFlipMorphOffset : PmxGroupMorphOffset
-	{
-	}
+        public Vector3 TorqueImpulse { get; set; }
 
-	/// <summary>
-	/// (PMX 2.1)
-	/// </summary>
-	public class PmxImpulseMorphOffset : PmxMorphOffset
-	{
-		public PmxRigidBody Rigid
-		{
-			get;
-			set;
-		}
+        internal override void Read(ref BufferReader br, PmxDocument doc)
+        {
+            this.Rigid = doc.ReadRigidBody(ref br);
+            this.IsLocal = br.ReadBoolean();
+            this.CentralImpulse = br.ReadVector3();
+            this.TorqueImpulse = br.ReadVector3();
+        }
 
-		public bool IsLocal
-		{
-			get;
-			set;
-		}
-
-		/// <summary>
-		/// Vector3
-		/// </summary>
-		public float[] CentralImpulse
-		{
-			get;
-			set;
-		}
-
-		/// <summary>
-		/// Vector3
-		/// </summary>
-		public float[] TorqueImpulse
-		{
-			get;
-			set;
-		}
-
-		public PmxImpulseMorphOffset()
-		{
-			this.CentralImpulse = new[] { 0f, 0, 0 };
-			this.TorqueImpulse = new[] { 0f, 0, 0 };
-		}
-
-		public override void Read(BinaryReader br, PmxDocument doc)
-		{
-			this.Rigid = doc.ReadRigidBody(br);
-			this.IsLocal = br.ReadBoolean();
-			this.CentralImpulse = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
-			this.TorqueImpulse = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
-		}
-
-		public override void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
-		{
-			cache.Write(this.Rigid);
-			bw.Write(this.IsLocal);
-			this.CentralImpulse.ForEach(bw.Write);
-			this.TorqueImpulse.ForEach(bw.Write);
-		}
-	}
+        internal override void Write(ref BufferWriter bw, PmxDocument doc, PmxIndexCache cache)
+        {
+            bw.Write(this.Rigid, cache);
+            bw.Write(this.IsLocal);
+            bw.Write(this.CentralImpulse);
+            bw.Write(this.TorqueImpulse);
+        }
+    }
 }

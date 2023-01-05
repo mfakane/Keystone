@@ -1,49 +1,28 @@
-﻿using System.IO;
+﻿using System.Numerics;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Xx
 {
 	public class XxVertex
 	{
-		public float[] Position
-		{
-			get;
-			set;
-		}
+		public Vector3 Position { get; set; }
 
-		public float[] Normal
-		{
-			get;
-			set;
-		}
+		public Vector3 Normal { get; set; }
 
-		public float[] UV
-		{
-			get;
-			set;
-		}
+		public Vector2 UV { get; set; }
 
-		public XxVertex()
-		{
-			this.Position = new[] { 0f, 0, 0 };
-			this.Normal = new[] { 0f, 0, 0 };
-			this.UV = new[] { 0f, 0 };
-		}
-
-		public static XxVertex Parse(BinaryReader br)
-		{
-			return new XxVertex
+		internal static XxVertex Parse(ref BufferReader br) =>
+			new()
 			{
-				Position = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() },
-				Normal = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() },
-				UV = new[] { br.ReadSingle(), br.ReadSingle() },
+				Position = br.ReadVector3(),
+				Normal = br.ReadVector3(),
+				UV = br.ReadVector2(),
 			};
-		}
 
-		public void Write(BinaryWriter bw)
+		internal void Write(ref BufferWriter bw)
 		{
-			this.Position.ForEach(bw.Write);
-			this.Normal.ForEach(bw.Write);
-			this.UV.ForEach(bw.Write);
+			bw.Write(this.Position);
+			bw.Write(this.Normal);
+			bw.Write(this.UV);
 		}
 	}
 }

@@ -13,7 +13,7 @@ typedef enum
 	BK_IK_BOUND,
 	BK_ROTATION_AFFECTED,
 	BK_IK_TARGET,
-	BK_INVISIBILE,
+	BK_INVISIBLE,
 	BK_TWIST,
 	BK_ROTATION_ASSOCIATED,
 } BoneKind;
@@ -95,7 +95,7 @@ struct Format
 	WORD visibleMorphs[visibleMorphCount];
 
 	char visibleBoneCategoryCount;		// number
-	char visibleBoneCatgories[visibleBoneCategoryCount][50];	// Shift_JIS string array
+	char visibleBoneCategories[visibleBoneCategoryCount][50];	// Shift_JIS string array
 
 	int visibleBoneCount;
 	BoneVisibility visibleBones[visibleBoneCount];
@@ -104,11 +104,11 @@ struct Format
 	bool englishCompatible;
 
 	// if (englishCompatible) {
-	char englishModelName[20];										// ASCII string
-	char englishDescription[256];									// ASCII string
-	char englishBoneNames[boneCount][20];							// ASCII string array
-	char englishMorphNames[morphCount - 1][20];						// ASCII string array, without "base" morph
-	char englishVisibleBoneCatgories[visibleBoneCategoryCount][50];	// ASCII string array
+	char englishModelName[20];											// ASCII string
+	char englishDescription[256];										// ASCII string
+	char englishBoneNames[boneCount][20];								// ASCII string array
+	char englishMorphNames[morphCount - 1][20];							// ASCII string array, without "base" morph
+	char englishVisibleBoneCategories[visibleBoneCategoryCount][50];	// ASCII string array
 	// }
 
 	char toonFileNames[10][100];									// ASCII string

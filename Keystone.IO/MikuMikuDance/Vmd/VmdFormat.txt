@@ -1,5 +1,4 @@
 // .vmd format definition
-// bool: _Bool (true: value != 0, false: value == 0)
 // char: uint8_t
 
 struct Format
@@ -81,7 +80,7 @@ struct CameraFrame
 	V_x1, V_x2, V_y1, V_y2
 	*/
 	int fov;				// degree
-	bool ortho;
+	char ortho;
 #endif
 }
 

@@ -1,33 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Vpd
 {
 	public class VpdBone
 	{
-		public string BoneName
-		{
-			get;
-			set;
-		}
+		public string BoneName { get; set; } = "ボーン";
 
-		public float[] Position
-		{
-			get;
-			set;
-		}
+		public Vector3 Position { get; set; }
 
-		public float[] Quaternion
-		{
-			get;
-			set;
-		}
-
-		public VpdBone()
-		{
-			this.Position = new[] { 0f, 0, 0 };
-			this.Quaternion = new[] { 0f, 0, 0, 1 };
-		}
+		public Quaternion Quaternion { get; set; } = Quaternion.Identity;
 
 		public static VpdBone Parse(IEnumerable<string> block)
 		{
@@ -43,24 +26,20 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 					var fl = i.Split(new[] { ';' }, 2).First().Split(',').Select(float.Parse).ToArray();
 
 					if (fl.Length == 4)
-						rt.Quaternion = fl;
+						rt.Quaternion = new(fl[0], fl[1], fl[2], fl[3]);
 					else
-						rt.Position = fl;
+						rt.Position = new(fl[0], fl[1], fl[2]);
 				}
 
 			return rt;
 		}
 
-		public string GetFormattedText(int index)
-		{
-			return string.Format
-			(
-				"Bone{0}{{{1}\r\n  {2};\t\t\t\t// trans x,y,z\r\n  {3};\t\t// Quaternion x,y,z,w\r\n}}",
-				index,
-				this.BoneName,
-				string.Join(",", this.Position.Select(_ => _.ToString("0.000000")).ToArray()),
-				string.Join(",", this.Quaternion.Select(_ => _.ToString("0.000000")).ToArray())
-			);
-		}
+		public string GetFormattedText(int index) =>
+			$$"""
+			Bone{{index}}{{{this.BoneName}}
+			  {{this.Position.X:0.000000}},{{this.Position.Y:0.000000}},{{this.Position.Z:0.000000}};\t\t\t\t// trans x,y,z
+			  {{this.Quaternion.X:0.000000}},{{this.Quaternion.Y:0.000000}},{{this.Quaternion.Z:0.000000}},{{this.Quaternion.W:0.000000}};\t\t// Quaternion x,y,z,w
+			}
+			""";
 	}
 }

@@ -1,53 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Pmd
 {
 	public class PmdMorph
 	{
-		public string Name
-		{
-			get;
-			set;
-		}
+		public string Name { get; set; } = "モーフ";
 
-		public string EnglishName
-		{
-			get;
-			set;
-		}
+		public string EnglishName { get; set; } = "Morph";
 
-		public PmdMorphKind Kind
-		{
-			get;
-			set;
-		}
+		public PmdMorphKind Kind { get; set; }
 
-		public IList<PmdVertex> Indices
-		{
-			get;
-			set;
-		}
+		public IList<PmdVertex> Indices { get; set; } = new List<PmdVertex>();
 
-		public IList<float[]> Offsets
-		{
-			get;
-			set;
-		}
+		public IList<Vector3> Offsets { get; set; } = new List<Vector3>();
 
-		public PmdMorph()
-		{
-			this.Indices = new List<PmdVertex>();
-			this.Offsets = new List<float[]>();
-		}
-
-		public static PmdMorph Parse(BinaryReader br, PmdDocument doc, PmdMorph morphBase)
+		internal static PmdMorph Parse(ref BufferReader br, PmdDocument doc, PmdMorph morphBase)
 		{
 			var rt = new PmdMorph
 			{
-				Name = PmdDocument.ReadPmdString(br, 20),
+				Name = br.ReadString(20),
 			};
 			var count = br.ReadUInt32();
 
@@ -58,37 +31,41 @@ namespace Linearstar.Keystone.IO.MikuMikuDance
 				var idx = (ushort)br.ReadUInt32();
 
 				rt.Indices.Add(rt.Kind == PmdMorphKind.None ? doc.Vertices[idx] : morphBase.Indices[idx]);
-				rt.Offsets.Add(new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() });
+				rt.Offsets.Add(br.ReadVector3());
 			}
 
 			return rt;
 		}
 
-		public void Write(BinaryWriter bw, PmdIndexCache cache, Dictionary<PmdVertex, int> morphBaseIndices)
+		internal void Write(ref BufferWriter bw, PmdIndexCache cache, Dictionary<PmdVertex, int> morphBaseIndices)
 		{
-			PmdDocument.WritePmdString(bw, this.Name, 20);
+			bw.Write(this.Name, 20);
 			bw.Write((uint)this.Offsets.Count);
 			bw.Write((byte)this.Kind);
-			this.Indices.Zip(this.Offsets, Tuple.Create).ForEach(_ =>
-			{
-				if (this.Kind == PmdMorphKind.None)
-					bw.Write((uint)cache.Vertices[_.Item1]);
-				else
-					bw.Write((uint)morphBaseIndices[_.Item1]);
 
-				_.Item2.ForEach(bw.Write);
-			});
+			var count = this.Offsets.Count;
+			for (var i = 0; i < count; i++)
+			{
+				var vertex = this.Indices[i];
+				
+				if (this.Kind == PmdMorphKind.None)
+					bw.Write(cache[vertex]);
+				else
+					bw.Write((uint)morphBaseIndices[vertex]);
+
+				bw.Write(this.Offsets[i]);
+			}
 		}
 
 		internal static PmdMorph CreateMorphBase(IEnumerable<PmdMorph> morphs)
 		{
-			var morphBaseIndices = morphs.SelectMany(_ => _.Indices).Distinct().ToList();
+			var morphBaseIndices = morphs.SelectMany(x => x.Indices).Distinct().ToList();
 
 			return new PmdMorph
 			{
 				Name = "base",
 				Indices = morphBaseIndices,
-				Offsets = morphBaseIndices.Select(_ => _.Position).ToList(),
+				Offsets = morphBaseIndices.Select(x => x.Position).ToList(),
 			};
 		}
 	}

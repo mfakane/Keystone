@@ -1,185 +1,160 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Linearstar.Keystone.IO;
 using Linearstar.Keystone.IO.Text;
 
 namespace Linearstar.Keystone.IO.Metasequoia
 {
-	/// <summary>
-	/// chunk [args] [attribute(args)] [{ ... }]
-	/// </summary>
-	public class MqChunk
-	{
-		public string Name
-		{
-			get;
-			set;
-		}
+    /// <summary>
+    /// chunk [args] [attribute(args)] [{ ... }]
+    /// </summary>
+    public class MqChunk
+    {
+        public string Name { get; set; }
 
-		public IList<string> Arguments
-		{
-			get;
-			set;
-		}
+        public IList<string> Arguments { get; set; } = new List<string>();
 
-		public IList<MqChunkAttribute> Attributes
-		{
-			get;
-			set;
-		}
+        public IList<MqChunkAttribute> Attributes { get; set; } = new List<MqChunkAttribute>();
 
-		public IList<MqChunk> Children
-		{
-			get;
-			set;
-		}
+        public IList<MqChunk> Children { get; set; } = new List<MqChunk>();
 
-		public bool AlwaysHaveChildren
-		{
-			get;
-			set;
-		}
+        public bool AlwaysHaveChildren { get; set; }
 
-		public MqChunk()
-		{
-			this.Attributes = new List<MqChunkAttribute>();
-			this.Arguments = new List<string>();
-			this.Children = new List<MqChunk>();
-		}
+        public MqChunk SetArguments(IEnumerable<string> args)
+        {
+            return SetArguments(args.ToArray());
+        }
 
-		public MqChunk SetArguments(IEnumerable<string> args)
-		{
-			return SetArguments(args.ToArray());
-		}
+        public MqChunk SetArguments(params string[] args)
+        {
+            this.Arguments.Clear();
+            this.Arguments = args.ToList();
 
-		public MqChunk SetArguments(params string[] args)
-		{
-			this.Arguments.Clear();
-			this.Arguments = args.ToList();
+            return this;
+        }
 
-			return this;
-		}
+        public MqChunk SetAttributes(IEnumerable<MqChunkAttribute> attrs)
+        {
+            return SetAttributes(attrs.ToArray());
+        }
 
-		public MqChunk SetAttributes(IEnumerable<MqChunkAttribute> attrs)
-		{
-			return SetAttributes(attrs.ToArray());
-		}
+        public MqChunk SetAttributes(params MqChunkAttribute[] attrs)
+        {
+            this.Attributes.Clear();
+            this.Attributes = attrs.ToList();
 
-		public MqChunk SetAttributes(params MqChunkAttribute[] attrs)
-		{
-			this.Attributes.Clear();
-			this.Attributes = attrs.ToList();
+            return this;
+        }
 
-			return this;
-		}
+        public MqChunk SetChildren(IEnumerable<MqChunk> children)
+        {
+            return SetChildren(children.ToArray());
+        }
 
-		public MqChunk SetChildren(IEnumerable<MqChunk> children)
-		{
-			return SetChildren(children.ToArray());
-		}
+        public MqChunk SetChildren(params MqChunk[] children)
+        {
+            this.AlwaysHaveChildren = true;
+            this.Children.Clear();
+            this.Children = children.ToList();
 
-		public MqChunk SetChildren(params MqChunk[] children)
-		{
-			this.AlwaysHaveChildren = true;
-			this.Children.Clear();
-			this.Children = children.ToList();
+            return this;
+        }
+        
+        public MqChunkAttribute? Attribute(string name, bool createIfNotFound = true)
+        {
+            var value = this.Attributes.FirstOrDefault(_ => _.Name.Equals(name, StringComparison.Ordinal));
 
-			return this;
-		}
+            if (createIfNotFound && value == null)
+                this.Attributes.Add(value = new MqChunkAttribute(name));
 
-		public MqChunkAttribute Attribute(string name, bool createIfNotFound = true)
-		{
-			var value = this.Attributes.FirstOrDefault(_ => _.Name.Equals(name, StringComparison.CurrentCulture));
+            return value;
+        }
 
-			if (createIfNotFound && value == null)
-				this.Attributes.Add(value = new MqChunkAttribute
-				{
-					Name = name,
-				});
+        public void RemoveAttributes(string name)
+        {
+            this.Attributes.Where(_ => _.Name.Equals(name, StringComparison.Ordinal)).ToArray()
+                .ForEach(_ => this.Attributes.Remove(_));
+        }
 
-			return value;
-		}
+        public MqChunk Child(string name, bool createIfNotFound = true)
+        {
+            var value = this.Children.FirstOrDefault(_ => _.Name.Equals(name, StringComparison.Ordinal));
 
-		public void RemoveAttributes(string name)
-		{
-			this.Attributes.Where(_ => _.Name.Equals(name, StringComparison.CurrentCulture)).ToArray().ForEach(_ => this.Attributes.Remove(_));
-		}
+            if (createIfNotFound && value == null)
+                this.Children.Add(value = new MqChunk
+                {
+                    Name = name,
+                });
 
-		public MqChunk Child(string name, bool createIfNotFound = true)
-		{
-			var value = this.Children.FirstOrDefault(_ => _.Name.Equals(name, StringComparison.CurrentCulture));
+            return value;
+        }
 
-			if (createIfNotFound && value == null)
-				this.Children.Add(value = new MqChunk
-				{
-					Name = name,
-				});
+        public void RemoveChildren(string name)
+        {
+            this.Children.Where(_ => _.Name.Equals(name, StringComparison.CurrentCulture)).ToArray()
+                .ForEach(_ => this.Children.Remove(_));
+        }
 
-			return value;
-		}
+        public static MqChunk Parse(MqTokenizer tokenizer)
+        {
+            while (tokenizer.Current.Kind == MqTokenizer.NewLineTokenKind)
+                tokenizer.MoveNext();
 
-		public void RemoveChildren(string name)
-		{
-			this.Children.Where(_ => _.Name.Equals(name, StringComparison.CurrentCulture)).ToArray().ForEach(_ => this.Children.Remove(_));
-		}
+            var rt = new MqChunk
+            {
+                Name = tokenizer.Current.Kind == MqTokenizer.IdentifierTokenKind ||
+                       tokenizer.Current.Kind == MqTokenizer.StringTokenKind
+                    ? tokenizer.Current.Text
+                    : null,
+            };
+            var args = tokenizer.StartWith(tokenizer.Current.Kind == MqTokenizer.DigitTokenKind
+                    ? new[] { tokenizer.Current }
+                    : new Token[0])
+                .TakeWhile(_ => _.Kind != MqTokenizer.BeginChildrenTokenKind && _.Kind != MqTokenizer.NewLineTokenKind)
+                .ToArray();
 
-		public static MqChunk Parse(MqTokenizer tokenizer)
-		{
-			while (tokenizer.Current.Kind == MqTokenizer.NewLineTokenKind)
-				tokenizer.MoveNext();
+            rt.Arguments = args
+                .TakeWhile(_ => _.Kind == MqTokenizer.DigitTokenKind || _.Kind == MqTokenizer.StringTokenKind)
+                .Select(_ => _.Text).ToList();
+            rt.Attributes = EnumerableEx.Defer(() =>
+            {
+                var attrs = args.Skip(rt.Arguments.Count);
+                var current = attrs.FirstOrDefault();
 
-			var rt = new MqChunk
-			{
-				Name = tokenizer.Current.Kind == MqTokenizer.IdentifierTokenKind || tokenizer.Current.Kind == MqTokenizer.StringTokenKind
-					? tokenizer.Current.Text
-					: null,
-			};
-			var args = tokenizer.StartWith(tokenizer.Current.Kind == MqTokenizer.DigitTokenKind ? new[] { tokenizer.Current } : new Token[0])
-								.TakeWhile(_ => _.Kind != MqTokenizer.BeginChildrenTokenKind && _.Kind != MqTokenizer.NewLineTokenKind)
-								.ToArray();
+                return attrs.GroupBy(_ =>
+                    {
+                        if (_.Kind == MqTokenizer.IdentifierTokenKind)
+                            current = _;
 
-			rt.Arguments = args.TakeWhile(_ => _.Kind == MqTokenizer.DigitTokenKind || _.Kind == MqTokenizer.StringTokenKind).Select(_ => _.Text).ToList();
-			rt.Attributes = Util.Defer(() =>
-			{
-				var attrs = args.Skip(rt.Arguments.Count);
-				var current = attrs.FirstOrDefault();
+                        return current;
+                    })
+                    .Select(x => new MqChunkAttribute(x.Key.Text, x.Skip(1).Select(t => t.Text).ToArray()));
+            }).ToList();
 
-				return attrs.GroupBy(_ =>
-				{
-					if (_.Kind == MqTokenizer.IdentifierTokenKind)
-						current = _;
+            if (tokenizer.Current.Kind == MqTokenizer.BeginChildrenTokenKind)
+            {
+                rt.Children = tokenizer.TakeWhile(_ => _.Kind != MqTokenizer.EndChildrenTokenKind)
+                    .Select(_ => Parse(tokenizer))
+                    .ToList();
+                tokenizer.MoveNext(MqTokenizer.EndChildrenTokenKind);
+            }
 
-					return current;
-				})
-				.Select(_ => new MqChunkAttribute
-				{
-					Name = _.Key.Text,
-					Arguments = _.Skip(1).Select(t => t.Text).ToList(),
-				});
-			}).ToList();
+            return rt;
+        }
 
-			if (tokenizer.Current.Kind == MqTokenizer.BeginChildrenTokenKind)
-			{
-				rt.Children = tokenizer.TakeWhile(_ => _.Kind != MqTokenizer.EndChildrenTokenKind)
-									   .Select(_ => Parse(tokenizer))
-									   .ToList();
-				tokenizer.MoveNext(MqTokenizer.EndChildrenTokenKind);
-			}
+        public string GetFormattedText()
+        {
+            var str = string.Join(" ",
+                new[] { this.Name }.Concat(this.Arguments).Concat(this.Attributes.Select(_ => _.GetFormattedText())));
 
-			return rt;
-		}
+            if (this.Children.Any())
+                str += " {" + MqDocument.NewLine + "\t" +
+                       string.Join(MqDocument.NewLine, this.Children.Select(_ => _.GetFormattedText()))
+                           .Replace(MqDocument.NewLine, MqDocument.NewLine + "\t") + MqDocument.NewLine + "}";
+            else if (this.AlwaysHaveChildren)
+                str += " {" + MqDocument.NewLine + "}";
 
-		public string GetFormattedText()
-		{
-			var str = string.Join(" ", new[] { this.Name }.Concat(this.Arguments).Concat(this.Attributes.Select(_ => _.GetFormattedText())));
-
-			if (this.Children.Any())
-				str += " {" + MqDocument.NewLine + "\t" + string.Join(MqDocument.NewLine, this.Children.Select(_ => _.GetFormattedText())).Replace(MqDocument.NewLine, MqDocument.NewLine + "\t") + MqDocument.NewLine + "}";
-			else if (this.AlwaysHaveChildren)
-				str += " {" + MqDocument.NewLine + "}";
-
-			return str.Trim();
-		}
-	}
+            return str.Trim();
+        }
+    }
 }

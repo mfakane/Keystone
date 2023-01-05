@@ -1,43 +1,22 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Pmd
 {
 	public class PmdDisplayList
 	{
-		public string Name
-		{
-			get;
-			set;
-		}
+		public string Name { get; set; } = "表示枠";
+		
+		public string EnglishName { get; set; } = "Display Frame";
 
-		public string EnglishName
-		{
-			get;
-			set;
-		}
+		public IList<PmdBone> Bones { get; set; } = new List<PmdBone>();
 
-		public IList<PmdBone> Bones
-		{
-			get;
-			set;
-		}
-
-		public PmdDisplayList()
-		{
-			this.Bones = new List<PmdBone>();
-		}
-		public static PmdDisplayList Parse(BinaryReader br)
-		{
-			return new PmdDisplayList
+		internal static PmdDisplayList Parse(ref BufferReader br) =>
+			new()
 			{
-				Name = PmdDocument.ReadPmdString(br, 50),
+				Name = br.ReadString(50),
 			};
-		}
 
-		public void Write(BinaryWriter bw)
-		{
-			PmdDocument.WritePmdString(bw, this.Name, 50);
-		}
+		internal void Write(ref BufferWriter bw) => 
+			bw.Write(this.Name, 50);
 	}
 }

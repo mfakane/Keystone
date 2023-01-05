@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Linearstar.Keystone.IO;
 
 namespace Linearstar.Keystone.IO.Elfreina
 {
@@ -68,7 +67,7 @@ namespace Linearstar.Keystone.IO.Elfreina
 
 						break;
 					case "VertexFormat":
-						rt.VertexFormat = i.Children.Select(_ => Util.ParseEnum<ElVertexFormat>(_.Values.First().Trim('"'))).ToList();
+						rt.VertexFormat = i.Children.Select(_ => EnumEx.Parse<ElVertexFormat>(_.Values.First().Trim('"'))).ToList();
 
 						break;
 					case "BoneNames":

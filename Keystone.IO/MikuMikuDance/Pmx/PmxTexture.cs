@@ -1,26 +1,16 @@
-﻿using System.IO;
-
-namespace Linearstar.Keystone.IO.MikuMikuDance
+﻿namespace Linearstar.Keystone.IO.MikuMikuDance.Pmx
 {
-	public class PmxTexture
-	{
-		public string FileName
-		{
-			get;
-			set;
-		}
+    public class PmxTexture
+    {
+        public string FileName { get; set; } = "";
 
-		public static PmxTexture Parse(BinaryReader br, PmxDocument doc)
-		{
-			return new PmxTexture
-			{
-				FileName = doc.ReadString(br),
-			};
-		}
+        internal static PmxTexture Parse(ref BufferReader br, PmxDocument doc) =>
+            new()
+            {
+                FileName = br.ReadString(doc.Header),
+            };
 
-		public void Write(BinaryWriter bw, PmxDocument doc)
-		{
-			doc.WriteString(bw, this.FileName);
-		}
-	}
+        internal void Write(ref BufferWriter bw, PmxDocument doc) =>
+            bw.Write(this.FileName, doc.Header);
+    }
 }

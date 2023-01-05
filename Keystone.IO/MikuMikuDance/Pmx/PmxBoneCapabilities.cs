@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Pmx
 {
 	[Flags]
-	public enum PmxBoneCapabilities : uint
+	public enum PmxBoneCapabilities : ushort
 	{
 		None,
 		ConnectToBone,

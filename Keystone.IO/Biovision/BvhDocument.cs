@@ -12,7 +12,6 @@ namespace Linearstar.Keystone.IO.Biovision
 		public const string DisplayName = "Biovision Hierarchy";
 		public const string Filter = "*.bvh";
 		public const string NewLine = "\r\n";
-		public static readonly Encoding Encoding = Encoding.GetEncoding(932);
 
 		public BvhJoint Root
 		{

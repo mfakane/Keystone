@@ -1,55 +1,46 @@
-using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Vmd
 {
-	public class VmdPropertyFrame
-	{
-		public uint FrameTime
-		{
-			get;
-			set;
-		}
+    public class VmdPropertyFrame
+    {
+        public uint FrameTime { get; set; }
 
-		public bool IsVisible
-		{
-			get;
-			set;
-		}
+        public bool IsVisible { get; set; }
 
-		public IDictionary<string, bool> IKEnabled
-		{
-			get;
-			set;
-		}
+        public IDictionary<string, bool> IKEnabled { get; set; } = new Dictionary<string, bool>();
 
-		public VmdPropertyFrame()
-		{
-			this.IKEnabled = new Dictionary<string, bool>();
-		}
+        internal static VmdPropertyFrame Parse(ref BufferReader br)
+        {
+            var rt = new VmdPropertyFrame()
+            {
+                FrameTime = br.ReadUInt32(),
+                IsVisible = br.ReadByte() != 0,
+            };
 
-		public static VmdPropertyFrame Parse(BinaryReader br)
-		{
-			return new VmdPropertyFrame
-			{
-				FrameTime = br.ReadUInt32(),
-				IsVisible = br.ReadByte() != 0,
-				IKEnabled = Enumerable.Range(0, br.ReadInt32()).Select(_ => Tuple.Create(VmdDocument.ReadVmdString(br, 20), br.ReadByte())).ToDictionary(_ => _.Item1, _ => _.Item2 != 0),
-			};
-		}
+            var iks = br.ReadUInt32();
+            for (uint i = 0; i < iks; i++)
+            {
+                var bone = br.ReadString(20);
+                var enabled = br.ReadInt32();
+                
+                rt.IKEnabled[bone] = enabled != 0;
+            }
 
-		public void Write(BinaryWriter bw)
-		{
-			bw.Write(this.FrameTime);
-			bw.Write(this.IsVisible ? (byte)1 : (byte)0);
-			bw.Write(this.IKEnabled.Count);
-			this.IKEnabled.ForEach(_ =>
-			{
-				VmdDocument.WriteVmdString(bw, _.Key, 20, VmdVersion.MMDVer2);
-				bw.Write(_.Value ? (byte)1 : (byte)0);
-			});
-		}
-	}
+            return rt;
+        }
+
+        internal void Write(ref BufferWriter bw)
+        {
+            bw.Write(this.FrameTime);
+            bw.Write(this.IsVisible);
+            
+            bw.Write(this.IKEnabled.Count);
+            foreach (var ikEnabled in this.IKEnabled)
+            {
+                bw.Write(ikEnabled.Key, 20);
+                bw.Write(ikEnabled.Value);
+            }
+        }
+    }
 }

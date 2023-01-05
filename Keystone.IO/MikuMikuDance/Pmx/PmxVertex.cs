@@ -1,94 +1,56 @@
-﻿using System.IO;
-using System.Linq;
+﻿using System.Numerics;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Pmx
 {
-	public class PmxVertex
-	{
-		public float[] Position
-		{
-			get;
-			set;
-		}
+    public class PmxVertex
+    {
+        public Vector3 Position { get; set; }
 
-		public float[] Normal
-		{
-			get;
-			set;
-		}
+        public Vector3 Normal { get; set; }
 
-		public float[] UV
-		{
-			get;
-			set;
-		}
+        public Vector2 UV { get; set; }
 
-		/// <summary>
-		/// Vector4[]
-		/// </summary>
-		public float[][] AdditionalUV
-		{
-			get;
-			set;
-		}
+        public Vector4[] AdditionalUV { get; set; } = { };
 
-		public PmxSkinningKind SkinningKind
-		{
-			get;
-			set;
-		}
+        public PmxSkinningKind SkinningKind { get; set; }
 
-		public PmxSkinningFunction SkinningFunction
-		{
-			get;
-			set;
-		}
+        public PmxSkinningFunction SkinningFunction { get; set; } = new PmxLinearBlendDeforming2();
 
-		public float EdgeSize
-		{
-			get;
-			set;
-		}
+        public float EdgeSize { get; set; }
 
-		public PmxVertex()
-		{
-			this.Position = new[] { 0f, 0, 0 };
-			this.Normal = new[] { 0f, 0, 0 };
-			this.UV = new[] { 0f, 0 };
-			this.AdditionalUV = new float[0][];
-			this.SkinningFunction = new PmxLinearBlendDeforming2();
-		}
+        internal static PmxVertex Parse(ref BufferReader br, PmxDocument doc)
+        {
+            var rt = new PmxVertex
+            {
+                Position = br.ReadVector3(),
+                Normal = br.ReadVector3(),
+                UV = br.ReadVector2(),
+                AdditionalUV = new Vector4[doc.Header.AdditionalUVCount],
+            };
 
-		public static PmxVertex Parse(BinaryReader br, PmxDocument doc)
-		{
-			var rt = new PmxVertex
-			{
-				Position = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() },
-				Normal = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() },
-				UV = new[] { br.ReadSingle(), br.ReadSingle() },
-				AdditionalUV = Enumerable.Range(0, doc.Header.AdditionalUVCount).Select(_ => new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle() }).ToArray(),
-				SkinningKind = (PmxSkinningKind)br.ReadByte(),
-			};
+            for (var i = 0; i < doc.Header.AdditionalUVCount; i++)
+                rt.AdditionalUV[i] = br.ReadVector4();
+            
+            rt.SkinningKind = (PmxSkinningKind)br.ReadByte();
+            rt.SkinningFunction = PmxSkinningFunction.Parse(ref br, doc, rt.SkinningKind);
+            rt.EdgeSize = br.ReadSingle();
 
-			rt.SkinningFunction = PmxSkinningFunction.Parse(br, doc, rt.SkinningKind);
-			rt.EdgeSize = br.ReadSingle();
+            return rt;
+        }
 
-			return rt;
-		}
+        internal void Write(ref BufferWriter bw, PmxDocument doc, PmxIndexCache cache)
+        {
+            if (doc.Version < 2.1f &&
+                this.SkinningKind == PmxSkinningKind.DualQuaternionDeforming)
+                this.SkinningKind = PmxSkinningKind.LinearBlendDeforming4;
 
-		public void Write(BinaryWriter bw, PmxDocument doc, PmxIndexCache cache)
-		{
-			if (doc.Version < 2.1f &&
-				this.SkinningKind == PmxSkinningKind.DualQuaternionDeforming)
-				this.SkinningKind = PmxSkinningKind.LinearBlendDeforming4;
-
-			this.Position.ForEach(bw.Write);
-			this.Normal.ForEach(bw.Write);
-			this.UV.ForEach(bw.Write);
-			this.AdditionalUV.ForEach(_ => _.ForEach(bw.Write));
-			bw.Write((byte)this.SkinningKind);
-			this.SkinningFunction.Write(bw, doc, cache);
-			bw.Write(this.EdgeSize);
-		}
-	}
+            bw.Write(this.Position);
+            bw.Write(this.Normal);
+            bw.Write(this.UV);
+            foreach (var additional in this.AdditionalUV) bw.Write(additional);
+            bw.Write((byte)this.SkinningKind);
+            this.SkinningFunction.Write(ref bw, doc, cache);
+            bw.Write(this.EdgeSize);
+        }
+    }
 }

@@ -1,48 +1,28 @@
-﻿using System.IO;
+﻿using System.Numerics;
 
-namespace Linearstar.Keystone.IO.MikuMikuDance
+namespace Linearstar.Keystone.IO.MikuMikuDance.Vmd
 {
-	public class VmdLightFrame
-	{
-		public uint FrameTime
-		{
-			get;
-			set;
-		}
+    public class VmdLightFrame
+    {
+        public uint FrameTime { get; set; }
 
-		public float[] Color
-		{
-			get;
-			set;
-		}
+        public Color3 Color { get; set; } = new(0.6f, 0.6f, 0.6f);
 
-		public float[] Position
-		{
-			get;
-			set;
-		}
+        public Vector3 Position { get; set; } = new(-0.5f, -1, 0.5f);
 
-		public VmdLightFrame()
-		{
-			this.Color = new[] { 0.6f, 0.6f, 0.6f };
-			this.Position = new[] { -0.5f, -1, 0.5f };
-		}
+        internal static VmdLightFrame Parse(ref BufferReader br) =>
+            new()
+            {
+                FrameTime = br.ReadUInt32(),
+                Color = br.ReadColor3(),
+                Position = br.ReadVector3(),
+            };
 
-		public static VmdLightFrame Parse(BinaryReader br)
-		{
-			return new VmdLightFrame
-			{
-				FrameTime = br.ReadUInt32(),
-				Color = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() },
-				Position = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle() },
-			};
-		}
-
-		public void Write(BinaryWriter bw)
-		{
-			bw.Write(this.FrameTime);
-			this.Color.ForEach(bw.Write);
-			this.Position.ForEach(bw.Write);
-		}
-	}
+        internal void Write(ref BufferWriter bw)
+        {
+            bw.Write(this.FrameTime);
+            bw.Write(this.Color);
+            bw.Write(this.Position);
+        }
+    }
 }
